@@ -1,1 +1,938 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <title>EVA - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'bounce-subtle': 'bounce-subtle 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'bounce-subtle': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-4px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        .dark {
+            background-color: #020617;
+            color: #f1f5f9;
+        }
+        /* High-Contrast Dark Mode Overrides */
+        .dark .bg-white {
+            background-color: #0f172a !important;
+        }
+        .dark .border-slate-200,
+        .dark .border-slate-100 {
+            border-color: #1e293b !important;
+        }
+        .dark h1,
+        .dark h2,
+        .dark h3,
+        .dark h4 {
+            color: #f8fafc !important;
+        }
+        .dark .text-slate-900,
+        .dark .text-slate-800,
+        .dark .text-slate-700,
+        .dark .text-slate-500 {
+            color: #f1f5f9 !important;
+        }
+        .dark .text-slate-600,
+        .dark .text-slate-400 {
+            color: #94a3b8 !important;
+        }
+        .dark .bg-slate-50,
+        .dark .bg-slate-50/50 {
+            background-color: #1e293b !important;
+        }
+        .dark .hover\:bg-slate-50\/50:hover {
+            background-color: #334155 !important;
+        }
+        .dark th {
+            background-color: #1e293b;
+            color: #cbd5e1 !important;
+        }
+        .dark td {
+            color: #cbd5e1 !important;
+            border-top: 1px solid #1e293b !important;
+        }
+        .dark .nav-btn {
+            color: #f8fafc !important;
+        }
+        .dark .nav-btn:hover {
+            background-color: #1e293b !important;
+        }
+        .dark .nav-btn.bg-indigo-50 {
+            background-color: #312e81 !important;
+            color: #e0e7ff !important;
+        }
+        .dark .filter-chip {
+            border-color: #334155;
+            color: #94a3b8;
+        }
+        .dark input,
+        .dark textarea {
+            background-color: #1e293b !important;
+            color: white !important;
+            border-color: #334155 !important;
+        }
+        /* Light Mode Specific Contrast Fixes - TOTAL BLACK */
+        body:not(.dark) h1,
+        body:not(.dark) h2,
+        body:not(.dark) h3,
+        body:not(.dark) h4,
+        body:not(.dark) .nav-btn,
+        body:not(.dark) th:not(.text-white),
+        body:not(.dark) td:not(.text-white),
+        body:not(.dark) tr:not(.text-white),
+        body:not(.dark) span:not(.text-indigo-600):not(.text-emerald-600):not(.text-rose-600):not(.text-white),
+        body:not(.dark) .text-slate-900,
+        body:not(.dark) .text-slate-800,
+        body:not(.dark) .text-slate-700,
+        body:not(.dark) .text-slate-600,
+        body:not(.dark) .text-slate-500,
+        body:not(.dark) .text-slate-400 {
+            color: #000000 !important;
+            /* Total Black for extreme readability */
+            opacity: 1 !important;
+        }
+        /* Force white on dark headers even in light mode */
+        body:not(.dark) tr.bg-indigo-900 th,
+        body:not(.dark) .bg-indigo-900 th {
+            color: #ffffff !important;
+        }
+        /* Chart background color adjustment */
+        body:not(.dark) .bg-white,
+        body:not(.dark) canvas {
+            background-color: #ffffff !important;
+        }
+        /* High Contrast Theme Tokens */
+        .dark .bg-white {
+            background-color: #0f172a !important;
+        }
+        .dark .border-slate-200 {
+            border-color: #1e293b !important;
+        }
+        .dark .text-slate-400 {
+            color: #64748b !important;
+        }
+        body:not(.dark) .bg-slate-50\/50 {
+            background-color: #f8fafc !important;
+        }
+        body:not(.dark) .border-slate-100 {
+            border-color: #e2e8f0 !important;
+        }
+        /* Gantt Milestone Flag - Moved to Header */
+        .gantt-flag {
+            display: none !important;
+            /* Hidden from rows */
+        }
+        @keyframes bounce-subtle {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-4px);
+            }
+        }
+        .animate-bounce-subtle {
+            animation: bounce-subtle 4s ease-in-out infinite;
+        }
+        /* Gantt Visualization Styles */
+        .gantt-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .dark .gantt-row {
+            border-color: #1e293b;
+        }
+        .gantt-lines-container {
+            flex: 1;
+            position: relative;
+            height: 60px;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 12px;
+        }
+        .gantt-line-expected {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 6px;
+            background: #818cf8;
+            border-radius: 3px;
+            z-index: 1;
+            width: 100%;
+        }
+        .gantt-line-materialized {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            height: 6px;
+            background: #34d399;
+            border-radius: 3px;
+            z-index: 2;
+            transition: width 0.3s ease;
+        }
+        .gantt-value-top {
+            position: absolute;
+            top: -12px;
+            width: 100%;
+            text-align: center;
+            font-size: 8px;
+            font-weight: 800;
+            color: #6366f1;
+        }
+        .gantt-value-bottom {
+            position: absolute;
+            top: 50px;
+            width: 100%;
+            text-align: center;
+            font-size: 8px;
+            font-weight: 800;
+            color: #10b981;
+        }
+        .line-segment {
+            position: relative;
+            height: 100%;
+        }
+        .shaded {
+            opacity: 0.2;
+        }
+        #loading-overlay {
+            background: #ffffff;
+            backdrop-filter: blur(8px);
+        }
+        .dark #loading-overlay {
+            background: #020617;
+        }
+        /* Toast Notification Styles */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #1e1b4b;
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1000;
+            /* Increased to be above everything */
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid #4338ca;
+            white-space: pre-wrap;
+            /* Support multi-line hito lists */
+        }
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+            to {
+                bottom: 30px;
+                opacity: 1;
+            }
+        }
+        @keyframes fadeout {
+            from {
+                bottom: 30px;
+                opacity: 1;
+            }
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen dark">
+    <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+            <p class="font-bold tracking-tight">Cargando EVA...</p>
+        </div>
+    </div>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar"
+            class="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-all duration-300">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-10 ml-2">
+                    <img src="https://i.ibb.co/G4SV5ckh/unnamed-1.png" alt="EVA Logo" class="h-10">
+                </div>
+                <nav class="space-y-2">
+                    <button id="btn-vpe" onclick="switchView('vpe')"
+                        class="nav-btn w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all">
+                        <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                        </svg>
+                        Resumen Ejecutivo
+                    </button>
+                    <button id="btn-initiatives" onclick="switchView('initiatives')"
+                        class="nav-btn w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all">
+                        <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        Iniciativas
+                    </button>
+                </nav>
+            </div>
+            <div class="mt-auto p-6">
+                <button onclick="toggleDarkMode()"
+                    class="w-full flex items-center justify-between px-4 py-2 text-xs font-black uppercase tracking-widest text-slate-400 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                    <span id="dark-mode-text">Modo Día</span>
+                    <svg id="moon-icon" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                </button>
+            </div>
+        </aside>
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header
+                class="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 shrink-0">
+                <h1 id="view-title" class="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                    Cargando...</h1>
+                <div class="flex items-center gap-4">
+                    <p id="user-greeting" class="text-sm font-medium text-slate-500">Hola, <span
+                            class="text-indigo-600">---</span></p>
+                    <div id="user-initial"
+                        class="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black shadow-lg">
+                        U</div>
+                </div>
+            </header>
+            <div id="views-container" class="flex-1 overflow-y-auto p-8 bg-slate-50/50 dark:bg-slate-950">
+                <!-- View: EXECUTIVE SUMMARY (VPE) -->
+                <section id="view-vpe" class="view space-y-8">
+                    <!-- Top KPI Card -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Cierre
+                                Proyectado PyG</h4>
+                            <span id="pyg-total" class="text-4xl font-black text-indigo-600 tracking-tighter">$0M</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total
+                                Eficiencia Identificada</h4>
+                            <span id="pot-total-exec"
+                                class="text-4xl font-black text-indigo-400 tracking-tighter">$0M</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total
+                                Eficiencia Materializada</h4>
+                            <span id="mat-total-exec"
+                                class="text-4xl font-black text-emerald-500 tracking-tighter">$0M</span>
+                        </div>
+                    </div>
+                    <!-- Charts Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div
+                            class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-[450px]">
+                            <h3
+                                class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                Eficiencia
+                                Mensual Esperada ($M)</h3>
+                            <div class="flex-1 relative">
+                                <canvas id="vpe-quarter-chart"></canvas>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-[450px]">
+                            <h3
+                                class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                Distribución
+                                Eficiencia potencial por VPE</h3>
+                            <div class="flex-1 relative">
+                                <canvas id="vpe-pie-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- VPE Table -->
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden mt-8">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm min-w-[1200px]">
+                                <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200">
+                                    <tr>
+                                        <th
+                                            class="px-8 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            VPE</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            Meta ($M)</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            Identificado ($M)</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            Materializado ($M)</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            % ID / Meta</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            % MAT / Meta</th>
+                                        <th
+                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                            Eficiencia MAT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="vpe-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <!-- View: INITIATIVES & GANTT -->
+                <section id="view-initiatives" class="view hidden space-y-6">
+                    <!-- Initiatives Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Iniciativas
+                                Filtradas</h4>
+                            <span id="count-init"
+                                class="text-3xl font-black text-slate-800 dark:text-white items-baseline">0</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Potencial
+                                Filtrado ($M)</h4>
+                            <span id="pot-init" class="text-3xl font-black text-indigo-600">$0M</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                Materializado Filtrado ($M)</h4>
+                            <span id="mat-init" class="text-3xl font-black text-emerald-500">$0M</span>
+                        </div>
+                    </div>
+                    <!-- Filters Panel -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
+                        <div id="resp-filter-section" class="hidden">
+                            <label
+                                class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Responsable
+                                Primario</label>
+                            <div id="responsable-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">VP /
+                                2do Nivel (VPE)</label>
+                            <div id="vpe-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+                    <!-- Initiatives Data Table -->
+                    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm min-w-[1000px]">
+                                <thead>
+                                    <tr class="bg-indigo-900 text-white border-b border-indigo-800">
+                                        <th
+                                            class="px-6 py-4 font-black uppercase text-[10px] tracking-widest text-left min-w-[350px]">
+                                            Iniciativa</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-left">
+                                            Cód</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-left">
+                                            Tipo</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-left">
+                                            VPE</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-left">
+                                            Responsable</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
+                                            Potencial</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
+                                            Materializado</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-center">
+                                            Hitos</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-center">
+                                            Seguimiento</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="initiatives-table-body"
+                                    class="divide-y divide-slate-100 dark:divide-slate-800"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- Gantt Timeline Section -->
+                    <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm relative">
+                        <div class="flex justify-between items-start mb-10">
+                            <h3 class="text-xl font-black uppercase tracking-tight">Cronograma de Ejecución Mensual
+                                ($M)</h3>
+                            <div
+                                class="flex items-center gap-6 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-indigo-400"></div>
+                                    <span
+                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Esperado</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                                    <span
+                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Materializado</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="gantt-container" class="space-y-6"></div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <!-- Milestones Modal -->
+    <div id="hitos-modal" onclick="if(event.target === this) closeHitosModal()"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md cursor-pointer">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-2xl p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] cursor-default">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-2xl font-black mb-1">Hitos de la Iniciativa</h3>
+                    <p id="hitos-subtitle" class="text-indigo-600 text-[10px] uppercase font-black tracking-widest"></p>
+                </div>
+                <button onclick="closeHitosModal()"
+                    class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white rounded-xl transition-all font-black">✕
+                    CERRAR</button>
+            </div>
+            <div id="hitos-timeline" class="flex-1 overflow-y-auto pr-4 space-y-6 relative">
+                <!-- Timeline vertical line -->
+                <div class="absolute left-[15px] top-0 bottom-0 w-0.5 bg-indigo-100 dark:bg-indigo-900/30"></div>
+                <div id="hitos-list" class="space-y-8 relative"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Observation Modal -->
+    <div id="obs-modal" onclick="if(event.target === this) closeModal()"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md cursor-pointer">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-md p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl cursor-default">
+            <h3 class="text-2xl font-black mb-1">Registrar Observación</h3>
+            <p id="modal-subtitle" class="text-indigo-600 text-[10px] mb-6 uppercase font-black tracking-widest"></p>
+            <textarea id="obs-text"
+                class="w-full h-40 p-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl outline-none focus:ring-2 ring-indigo-500 dark:text-white transition-all resize-none"
+                placeholder="Escribe aquí el seguimiento de esta iniciativa..."></textarea>
+            <div class="flex justify-end gap-3 mt-8">
+                <button onclick="closeModal()"
+                    class="px-6 py-3 text-sm font-bold text-slate-400 hover:text-slate-600 transition-all">Cancelar</button>
+                <button onclick="saveObservation()"
+                    class="px-8 py-3 bg-indigo-600 text-white font-black rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-600/20 transition-all">Guardar
+                    Observación</button>
+            </div>
+        </div>
+    </div>
+    </div>
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+    <script>
+        let appData = { user: {}, baseData: [], goals: [], milestones: [], vpeFilters: new Set(), respFilters: new Set() };
+        let currentModalData = null;
+        let vpeChartInstance = null, vpePieChartInstance = null;
+        window.onload = () => {
+            google.script.run
+                .withSuccessHandler(data => {
+                    try {
+                        if (!data) throw new Error("No se recibieron datos del servidor.");
+                        appData.user = data.user || {};
+                        appData.baseData = (data.baseData || []).filter(r => r && Array.isArray(r));
+                        appData.goals = (data.goals || []).filter(r => r && Array.isArray(r));
+                        appData.milestones = (data.milestones || []).filter(r => r && Array.isArray(r));
+                        initApp();
+                    } catch (e) {
+                        handleFatalError(e);
+                    }
+                })
+                .withFailureHandler(err => {
+                    handleFatalError(err);
+                })
+                .getInitialData();
+        };
+        function handleFatalError(err) {
+            console.error("Fatal Error:", err);
+            const overlay = document.getElementById('loading-overlay');
+            overlay.innerHTML = `
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-rose-200 dark:border-rose-900/30 shadow-2xl max-w-md text-center">
+                    <div class="text-4xl mb-4">⚠️</div>
+                    <h3 class="text-xl font-black text-rose-600 mb-2">Error de Carga</h3>
+                    <p class="text-sm text-slate-500 mb-6">${err.message || 'Ocurrió un error inesperado al inicializar la aplicación.'}</p>
+                    <button onclick="location.reload()" class="px-6 py-2 bg-slate-100 dark:bg-slate-800 font-bold rounded-xl hover:bg-slate-200 transition-all">Reintentar</button>
+                </div>
+            `;
+            overlay.classList.remove('hidden');
+        }
+        function initApp() {
+            try {
+                document.body.classList.add('dark'); // Force dark mode by default
+                document.getElementById('loading-overlay').classList.add('hidden');
+                if (!appData.user || !appData.user.nombre) {
+                    console.warn("User data missing");
+                }
+                document.getElementById('user-greeting').innerHTML = `Hola, <span class="text-indigo-600 font-bold">${appData.user.nombre || 'Usuario'}</span>`;
+                document.getElementById('user-initial').innerText = (appData.user.nombre || "U").charAt(0);
+                if (appData.user.perfil == 3) {
+                    document.getElementById('btn-vpe').classList.add('hidden');
+                    switchView('initiatives');
+                } else {
+                    const respSection = document.getElementById('resp-filter-section');
+                    if (respSection) respSection.classList.remove('hidden');
+                    switchView('vpe');
+                }
+            } catch (e) {
+                handleFatalError(e);
+            }
+        }
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('bg-indigo-50', 'text-indigo-700', 'ring-2', 'ring-indigo-100'));
+            const activeView = document.getElementById(`view-${viewId}`);
+            if (activeView) activeView.classList.remove('hidden');
+            const btn = document.getElementById(`btn-${viewId}`);
+            if (btn) btn.classList.add('bg-indigo-50', 'text-indigo-700', 'ring-2', 'ring-indigo-100');
+            const titles = { 'vpe': 'Cuadro de Mando Ejecutivo', 'initiatives': 'Gestión de Iniciativas', 'detail': 'Panel de Detalle' };
+            document.getElementById('view-title').innerText = titles[viewId] || 'EVA';
+            if (viewId === 'vpe') buildVPEView();
+            if (viewId === 'initiatives') buildInitiativesView();
+        }
+        function buildVPEView() {
+            const tbody = document.getElementById('vpe-table-body');
+            tbody.innerHTML = '';
+            const vpeMap = {};
+            // Metas mapping (Start with goals)
+            appData.goals.slice(1).forEach(row => {
+                if (row && row[0]) vpeMap[String(row[0]).trim()] = { meta: parseFloat(row[1]) || 0, pot: 0, mat: 0 };
+            });
+            let q1 = 0, q2 = 0, q3 = 0, q4 = 0, pyg = 0, totalPot = 0, totalMat = 0;
+            appData.baseData.forEach(row => {
+                if (!row) return;
+                const vpe = row[3] ? String(row[3]).trim() : 'Sin VPE';
+                if (!vpeMap[vpe]) vpeMap[vpe] = { meta: 0, pot: 0, mat: 0 };
+                const p = parseFloat(row[18]) || 0;
+                const m = parseFloat(row[20]) || 0;
+                vpeMap[vpe].pot += p;
+                vpeMap[vpe].mat += m;
+                totalPot += p;
+                totalMat += m;
+                q1 += parseFloat(row[51]) || 0; q2 += parseFloat(row[52]) || 0;
+                q3 += parseFloat(row[53]) || 0; q4 += parseFloat(row[54]) || 0;
+                pyg += parseFloat(row[89]) || 0;
+            });
+            document.getElementById('pyg-total').innerText = `$${(pyg / 1000000).toFixed(1)}M`;
+            document.getElementById('pot-total-exec').innerText = `$${(totalPot / 1000000).toFixed(1)}M`;
+            document.getElementById('mat-total-exec').innerText = `$${(totalMat / 1000000).toFixed(1)}M`;
+            const labels = [], pots = [];
+            Object.keys(vpeMap).sort().forEach(vpe => {
+                const i = vpeMap[vpe];
+                labels.push(vpe); pots.push(i.pot / 1000000);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all";
+                tr.innerHTML = `
+                    <td class="px-8 py-5 font-black text-slate-900 dark:text-slate-100">${vpe}</td>
+                    <td class="px-6 py-5 font-mono text-slate-500 dark:text-slate-400">$${(i.meta / 1000000).toFixed(1)}M</td>
+                    <td class="px-6 py-5 font-mono text-indigo-600 dark:text-indigo-400 font-black">$${(i.pot / 1000000).toFixed(1)}M</td>
+                    <td class="px-6 py-5 font-mono text-emerald-600 dark:text-emerald-400 font-black">$${(i.mat / 1000000).toFixed(1)}M</td>
+                    <td class="px-6 py-5 font-black text-xs text-indigo-500">${(i.meta > 0 ? i.pot / i.meta * 100 : 0).toFixed(1)}%</td>
+                    <td class="px-6 py-5 font-black text-xs text-emerald-500">${(i.meta > 0 ? i.mat / i.meta * 100 : 0).toFixed(1)}%</td>
+                    <td class="px-6 py-5"><span class="px-3 py-1 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">${(i.pot > 0 ? i.mat / i.pot * 100 : 0).toFixed(0)}% Efic.</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            renderVPECharts(labels, pots, [q1, q2, q3, q4]);
+        }
+        function renderVPECharts(labels, pots, qData) {
+            const ctxQ = document.getElementById('vpe-quarter-chart').getContext('2d');
+            const ctxP = document.getElementById('vpe-pie-chart').getContext('2d');
+            if (vpeChartInstance) vpeChartInstance.destroy();
+            if (vpePieChartInstance) vpePieChartInstance.destroy();
+            const isDark = document.body.classList.contains('dark');
+            const textColor = isDark ? '#f1f5f9' : '#1e293b';
+            const gridColor = isDark ? '#334155' : '#f1f5f9';
+            vpeChartInstance = new Chart(ctxQ, {
+                type: 'line',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        data: qData.map(v => v / 1000000),
+                        borderColor: '#6366f1',
+                        borderWidth: 6,
+                        pointRadius: 8,
+                        pointHoverRadius: 12,
+                        pointBackgroundColor: '#6366f1',
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { weight: 'bold' } } },
+                        x: { grid: { display: false }, ticks: { color: textColor, font: { weight: 'bold' } } }
+                    }
+                }
+            });
+            vpePieChartInstance = new Chart(ctxP, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: pots,
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
+                        borderWidth: 0,
+                        hoverOffset: 30,
+                        spacing: 8
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: textColor, padding: 25, font: { weight: 'bold', size: 11 } } },
+                        tooltip: { padding: 16, displayColors: true, backgroundColor: isDark ? '#1e293b' : '#ffffff', bodyColor: isDark ? '#f1f5f9' : '#1e293b' }
+                    }
+                }
+            });
+        }
+        function getFilteredData() {
+            return appData.baseData.filter(row => {
+                if (!row) return false;
+                const rowVpe = row[3] ? String(row[3]).trim() : '';
+                const rowResp = row[10] ? String(row[10]).trim() : '';
+                const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(rowVpe);
+                const passResp = appData.respFilters.size === 0 || appData.respFilters.has(rowResp);
+                return passVpe && passResp;
+            });
+        }
+        function buildInitiativesView() {
+            const resps = new Set(), vpes = new Set();
+            appData.baseData.forEach(row => {
+                if (!row) return;
+                if (row[10]) resps.add(String(row[10]).trim());
+                if (row[3]) vpes.add(String(row[3]).trim());
+            });
+            const buildChips = (containerId, sourceSet, activeSet) => {
+                const box = document.getElementById(containerId);
+                box.innerHTML = '';
+                Array.from(sourceSet).sort().forEach(v => {
+                    const b = document.createElement('button');
+                    const isActive = activeSet.has(v);
+                    b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
+                    b.innerText = v;
+                    b.onclick = () => { if (activeSet.has(v)) activeSet.delete(v); else activeSet.add(v); buildInitiativesView(); };
+                    box.appendChild(b);
+                });
+            };
+            buildChips('responsable-filters', resps, appData.respFilters);
+            buildChips('vpe-filters', vpes, appData.vpeFilters);
+            const tbody = document.getElementById('initiatives-table-body');
+            tbody.innerHTML = '';
+            const filtered = getFilteredData();
+            // Summary Calculation
+            let fPot = 0, fMat = 0;
+            filtered.forEach(r => { fPot += parseFloat(r[18]) || 0; fMat += parseFloat(r[20]) || 0; });
+            document.getElementById('count-init').innerText = filtered.length;
+            document.getElementById('pot-init').innerText = `$${(fPot / 1000000).toFixed(1)}M`;
+            document.getElementById('mat-init').innerText = `$${(fMat / 1000000).toFixed(1)}M`;
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all border-b border-slate-100 dark:border-slate-800";
+                const cod = row[0], name = row[1];
+                const pot = parseFloat(row[18]) || 0, mat = parseFloat(row[20]) || 0;
+                const vpe = row[3] || 'N/A', resp = row[10] || 'N/A', type = row[6] || 'N/A';
+                tr.innerHTML = `
+                    <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[400px] whitespace-normal leading-relaxed" title="${name}">${name}</td>
+                    <td class="px-4 py-5 font-mono text-[10px] text-slate-500 dark:text-slate-400 font-bold">${cod || 'N/A'}</td>
+                    <td class="px-4 py-5 text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter">${type || 'N/A'}</td>
+                    <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(vpe || 'N/A').toLowerCase()}</td>
+                    <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(resp || 'N/A').toLowerCase()}</td>
+                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-right whitespace-nowrap">$${(pot / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${(mat / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 text-center"><button onclick="openHitosModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-full transition-all" title="Ver Hitos">🚩</button></td>
+                    <td class="px-4 py-5 text-center"><button onclick="openModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded-full transition-all">✎</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+            const gantt = document.getElementById('gantt-container');
+            gantt.innerHTML = '';
+            // Collect all milestones for the current filtered initiatives
+            const currentCodes = new Set(filtered.map(r => String(r[0]).trim()));
+            const monthMilestones = appData.milestones.filter(m => m && m[1] && currentCodes.has(String(m[1]).trim()));
+            // Gantt Header with Months
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const gHeader = document.createElement('div');
+            gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
+            let monthLabels = '';
+            months.forEach((m, idx) => {
+                const dayHitos = monthMilestones.filter(h => {
+                    const d = new Date(h[3]);
+                    return !isNaN(d.getTime()) && d.getMonth() === idx;
+                });
+                const hasHito = dayHitos.length > 0;
+                const hitoNames = dayHitos.map(h => `• ${h[2]}`).join('\n');
+                const escapedHitoNames = hitoNames.replace(/'/g, "\\'").replace(/\n/g, "\\n");
+                const flagShadow = hasHito ? `drop-shadow(0 4px 6px rgba(244,63,94,0.4))` : '';
+                monthLabels += `
+                    <div class="flex-1 flex flex-col items-center justify-center">
+                        <div class="text-[11px] font-black uppercase tracking-widest leading-none mb-2">${m}</div>
+                        ${hasHito ? `<div class="text-rose-500 text-lg animate-bounce-subtle cursor-pointer" style="filter:${flagShadow}; line-height:0.5;" title="${hitoNames}" onclick="showToast('Hitos en ${m}:\\n${escapedHitoNames}')">🚩</div>` : '<div class="h-4"></div>'}
+                    </div>
+                `;
+            });
+            gHeader.innerHTML = `<div class="w-80 shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-3 pb-2 border-b-2 border-slate-100 dark:border-slate-800">${monthLabels}</div>`;
+            gantt.appendChild(gHeader);
+            const curMonth = new Date().getMonth();
+            filtered.forEach(row => {
+                if (!row) return;
+                const cod = row[0] || "";
+                const exp = row.slice(33, 45), mat = row.slice(67, 79);
+                // Get milestones for this initiative
+                const rowMilestones = appData.milestones.filter(m => m && m[1] && String(m[1]).trim() == String(cod).trim());
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl";
+                let segments = '';
+                for (let i = 0; i < 12; i++) {
+                    const e = parseFloat(exp[i]) || 0, m = parseFloat(mat[i]) || 0;
+                    const w = e > 0 ? Math.min((m / e) * 100, 100) : (m > 0 ? 100 : 0);
+                    const dispE = e > 0 ? (e / 1000000).toFixed(1) + 'M' : '';
+                    const dispM = m > 0 ? (m / 1000000).toFixed(1) + 'M' : '';
+                    // Hitos are now visualized in the Gantt Header for a global view
+                    segments += `<div class="line-segment">
+                        ${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}
+                        <div class="gantt-line-expected ${e === 0 ? 'hidden' : ''}"></div>
+                        <div class="gantt-line-materialized ${m === 0 ? 'shaded' : ''}" style="width:${w}%"></div>
+                        ${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}
+                    </div>`;
+                }
+                rowDiv.innerHTML = `<div class="w-80 shrink-0 font-black text-sm truncate text-slate-900 dark:text-white" title="${row[1] || 'Sin Nombre'}">${row[1] || 'Sin Nombre'}</div><div class="gantt-lines-container">${segments}</div>`;
+                gantt.appendChild(rowDiv);
+            });
+        }
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
+        }
+        function openModal(cod, name) {
+            currentModalData = { codigo: cod, iniciativa: name };
+            document.getElementById('modal-subtitle').innerText = `${cod} • ${name}`;
+            document.getElementById('obs-text').value = '';
+            document.getElementById('obs-modal').classList.remove('hidden');
+        }
+        function closeModal() { document.getElementById('obs-modal').classList.add('hidden'); }
+        function saveObservation() {
+            const text = document.getElementById('obs-text').value;
+            if (!text.trim()) return showToast('Por favor escribe un seguimiento.');
+            const p = { codigo: currentModalData.codigo, iniciativa: currentModalData.iniciativa, observacion: text };
+            google.script.run
+                .withSuccessHandler(() => { showToast('¡Observación guardada con éxito!'); closeModal(); })
+                .withFailureHandler(e => showToast('Error: ' + e))
+                .submitObservation(p);
+        }
+        function openHitosModal(cod, name) {
+            const searchCod = String(cod || "").trim();
+            const hitos = appData.milestones.filter(r => r && r[1] && String(r[1]).trim() == searchCod);
+            const list = document.getElementById('hitos-list');
+            list.innerHTML = '';
+            document.getElementById('hitos-subtitle').innerText = `${cod} • ${name}`;
+            if (hitos.length === 0) {
+                list.innerHTML = '<p class="text-slate-400 font-bold text-center py-10">No hay hitos registrados para esta iniciativa.</p>';
+            } else {
+                hitos.forEach(h => {
+                    // Col A: Name, Col B: Code, Col C: Hito, Col D: Date, Col E: Status
+                    const dateVal = h[3];
+                    const isDone = h[4] === true || h[4] === "VERDADERO" || h[4] === "TRUE";
+                    const statusText = isDone ? 'Completado' : 'Sin completar';
+                    const statusClass = isDone ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
+                    const date = dateVal ? (isNaN(new Date(dateVal).getTime()) ? dateVal : new Date(dateVal).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })) : 'Sin fecha';
+                    const div = document.createElement('div');
+                    div.className = "relative pl-10";
+                    div.innerHTML = `
+                        <div class="absolute left-[-1px] top-1 h-8 w-8 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 flex items-center justify-center z-10">
+                            <span class="text-white text-[10px]">🚩</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-indigo-900/20 shadow-sm">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">${date}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[8px] font-black ${statusClass} uppercase">${statusText}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${h[2] || 'Sin título'}</h4>
+                            <p class="text-xs text-slate-500 mt-2">${h[0] || ''}</p>
+                        </div>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            document.getElementById('hitos-modal').classList.remove('hidden');
+        }
+        function closeHitosModal() {
+            document.getElementById('hitos-modal').classList.add('hidden');
+        }
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            document.getElementById('dark-mode-text').innerText = isDark ? 'Modo Día' : 'Modo Noche';
+            buildVPEView(); buildInitiativesView();
+        }
+    </script>
+</body>
+</html>

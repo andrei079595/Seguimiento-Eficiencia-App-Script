@@ -154,10 +154,21 @@
         body:not(.dark) .border-slate-100 {
             border-color: #e2e8f0 !important;
         }
-        /* Gantt Milestone Flag - Moved to Header */
+        /* Gantt Milestone Flag - Restored to Rows */
         .gantt-flag {
-            display: none !important;
-            /* Hidden from rows */
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            line-height: 1;
+        }
+        .gantt-flag:hover {
+            transform: translateX(-50%) scale(1.3);
         }
         @keyframes bounce-subtle {
             0%,
@@ -592,6 +603,7 @@
                     try {
                         if (!data) throw new Error("No se recibieron datos del servidor.");
                         appData.user = data.user || {};
+                        appData.headers = data.headers || [];
                         appData.baseData = (data.baseData || []).filter(r => r && Array.isArray(r));
                         appData.goals = (data.goals || []).filter(r => r && Array.isArray(r));
                         appData.milestones = (data.milestones || []).filter(r => r && Array.isArray(r));
@@ -651,6 +663,34 @@
             if (viewId === 'vpe') buildVPEView();
             if (viewId === 'initiatives') buildInitiativesView();
         }
+        const findIdx = (keywords, fallback, exactMatch = false) => {
+            const h = appData.headers || [];
+            const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+            // 1. Precise Match
+            if (exactMatch) {
+                const eIdx = h.findIndex(hdr => hdr && keywords.some(k => hdr.toLowerCase() === k.toLowerCase()));
+                if (eIdx !== -1) return eIdx;
+            }
+            // 2. Contains all keywords AND 'total' or 'consolidado'
+            const tIdx = h.findIndex(hdr => {
+                if (!hdr) return false;
+                const lower = hdr.toLowerCase();
+                return keywords.every(k => lower.includes(k.toLowerCase())) && (lower.includes('total') || lower.includes('consolidado') || lower.includes('cierre'));
+            });
+            if (tIdx !== -1) return tIdx;
+            // 3. Contains all keywords AND DOES NOT contain a month name (to avoid Jan, Feb, etc.)
+            const sIdx = h.findIndex(hdr => {
+                if (!hdr) return false;
+                const lower = hdr.toLowerCase();
+                const hasKeywords = keywords.every(k => lower.includes(k.toLowerCase()));
+                const hasMonth = months.some(m => lower.includes(m));
+                return hasKeywords && !hasMonth;
+            });
+            if (sIdx !== -1) return sIdx;
+            // 4. Just contains keywords (last resort)
+            const idx = h.findIndex(hdr => hdr && keywords.every(k => hdr.toLowerCase().includes(k.toLowerCase())));
+            return idx === -1 ? fallback : idx;
+        };
         function buildVPEView() {
             const tbody = document.getElementById('vpe-table-body');
             tbody.innerHTML = '';
@@ -659,13 +699,15 @@
             appData.goals.slice(1).forEach(row => {
                 if (row && row[0]) vpeMap[String(row[0]).trim()] = { meta: parseFloat(row[1]) || 0, pot: 0, mat: 0 };
             });
+            const potIdx = 46; // Column AU
+            const matIdx = 80; // Column CC
             let q1 = 0, q2 = 0, q3 = 0, q4 = 0, pyg = 0, totalPot = 0, totalMat = 0;
             appData.baseData.forEach(row => {
                 if (!row) return;
                 const vpe = row[3] ? String(row[3]).trim() : 'Sin VPE';
                 if (!vpeMap[vpe]) vpeMap[vpe] = { meta: 0, pot: 0, mat: 0 };
-                const p = parseFloat(row[18]) || 0;
-                const m = parseFloat(row[20]) || 0;
+                const p = parseFloat(row[potIdx]) || 0;
+                const m = parseFloat(row[matIdx]) || 0;
                 vpeMap[vpe].pot += p;
                 vpeMap[vpe].mat += m;
                 totalPot += p;
@@ -786,9 +828,14 @@
             const tbody = document.getElementById('initiatives-table-body');
             tbody.innerHTML = '';
             const filtered = getFilteredData();
+            const potIdx = 46; // Column AU
+            const matIdx = 80; // Column CC
             // Summary Calculation
             let fPot = 0, fMat = 0;
-            filtered.forEach(r => { fPot += parseFloat(r[18]) || 0; fMat += parseFloat(r[20]) || 0; });
+            filtered.forEach(r => {
+                fPot += parseFloat(r[potIdx]) || 0;
+                fMat += parseFloat(r[matIdx]) || 0;
+            });
             document.getElementById('count-init').innerText = filtered.length;
             document.getElementById('pot-init').innerText = `$${(fPot / 1000000).toFixed(1)}M`;
             document.getElementById('mat-init').innerText = `$${(fMat / 1000000).toFixed(1)}M`;
@@ -796,7 +843,8 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all border-b border-slate-100 dark:border-slate-800";
                 const cod = row[0], name = row[1];
-                const pot = parseFloat(row[18]) || 0, mat = parseFloat(row[20]) || 0;
+                const pot = parseFloat(row[potIdx]) || 0;
+                const mat = parseFloat(row[matIdx]) || 0;
                 const vpe = row[3] || 'N/A', resp = row[10] || 'N/A', type = row[6] || 'N/A';
                 tr.innerHTML = `
                     <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[400px] whitespace-normal leading-relaxed" title="${name}">${name}</td>
@@ -833,7 +881,7 @@
                 monthLabels += `
                     <div class="flex-1 flex flex-col items-center justify-center">
                         <div class="text-[11px] font-black uppercase tracking-widest leading-none mb-2">${m}</div>
-                        ${hasHito ? `<div class="text-rose-500 text-lg animate-bounce-subtle cursor-pointer" style="filter:${flagShadow}; line-height:0.5;" title="${hitoNames}" onclick="showToast('Hitos en ${m}:\\n${escapedHitoNames}')">🚩</div>` : '<div class="h-4"></div>'}
+                        <div class="h-4"></div>
                     </div>
                 `;
             });
@@ -854,10 +902,18 @@
                     const w = e > 0 ? Math.min((m / e) * 100, 100) : (m > 0 ? 100 : 0);
                     const dispE = e > 0 ? (e / 1000000).toFixed(1) + 'M' : '';
                     const dispM = m > 0 ? (m / 1000000).toFixed(1) + 'M' : '';
-                    // Hitos are now visualized in the Gantt Header for a global view
+                    // Initiative-specific milestones for this month segment
+                    const monthHitos = rowMilestones.filter(h => {
+                        const d = new Date(h[3]);
+                        return !isNaN(d.getTime()) && d.getMonth() === i;
+                    });
+                    const segmentHasHito = monthHitos.length > 0;
+                    const hNames = monthHitos.map(h => `• ${h[2]}`).join('\n');
+                    const escHNames = hNames.replace(/'/g, "\\'").replace(/\n/g, "\\n");
                     segments += `<div class="line-segment">
                         ${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}
                         <div class="gantt-line-expected ${e === 0 ? 'hidden' : ''}"></div>
+                        ${segmentHasHito ? `<div class="gantt-flag animate-bounce-subtle" title="${hNames}" onclick="showToast('Hito de ${String(row[1]).replace(/'/g, "")} en ${months[i]}:\\n${escHNames}')">🚩</div>` : ''}
                         <div class="gantt-line-materialized ${m === 0 ? 'shaded' : ''}" style="width:${w}%"></div>
                         ${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}
                     </div>`;

@@ -374,6 +374,26 @@
                             <span id="pyg-total" class="text-4xl font-black text-indigo-600 tracking-tighter">$0M</span>
                         </div>
                         <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5 col-span-1 md:col-span-3 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div class="space-y-4 flex-1">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Filtros Globales
+                                </h4>
+                                <div id="vpe-category-filters" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div id="exec-toggle-container" class="hidden shrink-0">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Vista de
+                                    Datos</h4>
+                                <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
+                                    <button id="toggle-team" onclick="setExecToggle('team')"
+                                        class="px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">Mi
+                                        Equipo</button>
+                                    <button id="toggle-all" onclick="setExecToggle('all')"
+                                        class="px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">Toda
+                                        la Base</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div
                             class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
                             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total
                                 Eficiencia Identificada</h4>
@@ -449,25 +469,37 @@
                 <!-- View: INITIATIVES & GANTT -->
                 <section id="view-initiatives" class="view hidden space-y-6">
                     <!-- Initiatives Summary Cards -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div
-                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Iniciativas
                                 Filtradas</h4>
                             <span id="count-init"
                                 class="text-3xl font-black text-slate-800 dark:text-white items-baseline">0</span>
                         </div>
                         <div
-                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Potencial
-                                Filtrado ($M)</h4>
-                            <span id="pot-init" class="text-3xl font-black text-indigo-600">$0M</span>
+                                ($M)</h4>
+                            <span id="pot-init" class="text-2xl font-black text-indigo-600">$0M</span>
                         </div>
                         <div
-                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                            class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
-                                Materializado Filtrado ($M)</h4>
-                            <span id="mat-init" class="text-3xl font-black text-emerald-500">$0M</span>
+                                Materializado ($M)</h4>
+                            <span id="mat-init" class="text-2xl font-black text-emerald-500">$0M</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm border-indigo-200/50">
+                            <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Potencial
+                                (FTEs)</h4>
+                            <span id="pot-fte-init" class="text-2xl font-black text-indigo-400">0.0</span>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm border-emerald-200/50">
+                            <h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">
+                                Materializado (FTEs)</h4>
+                            <span id="mat-fte-init" class="text-2xl font-black text-emerald-400">0.0</span>
                         </div>
                     </div>
                     <!-- Filters Panel -->
@@ -479,10 +511,50 @@
                                 Primario</label>
                             <div id="responsable-filters" class="flex flex-wrap gap-2"></div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">VP /
-                                2do Nivel (VPE)</label>
+                        <div id="vpe-filter-parent">
+                            <label
+                                class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">VPE</label>
                             <div id="vpe-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div id="category-filter-section" class="flex-1">
+                                <label
+                                    class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Fuente
+                                    de Eficiencia (Manos Extendidas vs Gasto de Personal)</label>
+                                <div id="init-category-filters" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div id="init-toggle-container"
+                                class="hidden shrink-0 border-l border-slate-100 dark:border-slate-800 pl-6">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Vista de
+                                    Datos</h4>
+                                <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
+                                    <button id="toggle-team-init" onclick="setExecToggle('team')"
+                                        class="px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">Mi
+                                        Equipo</button>
+                                    <button id="toggle-all-init" onclick="setExecToggle('all')"
+                                        class="px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter">Toda
+                                        la Base</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- New Chart Section for Initiatives -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div
+                            class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-[400px]">
+                            <h3 class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500">Eficiencia
+                                Esperada vs Mat ($M) - Filtrado</h3>
+                            <div class="flex-1 relative">
+                                <canvas id="init-quarter-chart"></canvas>
+                            </div>
+                        </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-[400px]">
+                            <h3 class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500">Potenciales por
+                                iniciativa</h3>
+                            <div class="flex-1 relative">
+                                <canvas id="init-pie-chart"></canvas>
+                            </div>
                         </div>
                     </div>
                     <!-- Initiatives Data Table -->
@@ -492,7 +564,7 @@
                                 <thead>
                                     <tr class="bg-indigo-900 text-white border-b border-indigo-800">
                                         <th
-                                            class="px-6 py-4 font-black uppercase text-[10px] tracking-widest text-left min-w-[350px]">
+                                            class="px-6 py-4 font-black uppercase text-[10px] tracking-widest text-left min-w-[300px]">
                                             Iniciativa</th>
                                         <th
                                             class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-left">
@@ -508,10 +580,19 @@
                                             Responsable</th>
                                         <th
                                             class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
-                                            Potencial</th>
+                                            Pot. ($)</th>
                                         <th
                                             class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
-                                            Materializado</th>
+                                            Pot. (FTE)</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
+                                            Mat. ($)</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-right">
+                                            Mat. (FTE)</th>
+                                        <th
+                                            class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-center">
+                                            % Avance</th>
                                         <th
                                             class="px-4 py-4 font-black uppercase text-[10px] tracking-widest text-center">
                                             Hitos</th>
@@ -594,9 +675,14 @@
     <!-- Toast Notification -->
     <div id="toast"></div>
     <script>
-        let appData = { user: {}, baseData: [], goals: [], milestones: [], vpeFilters: new Set(), respFilters: new Set() };
+        let appData = {
+            user: {}, baseData: [], goals: [], milestones: [],
+            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(),
+            execViewToggle: 'all' // 'all' or 'team'
+        };
         let currentModalData = null;
         let vpeChartInstance = null, vpePieChartInstance = null;
+        let initQChartInstance = null, initPieChartInstance = null;
         window.onload = () => {
             google.script.run
                 .withSuccessHandler(data => {
@@ -607,6 +693,8 @@
                         appData.baseData = (data.baseData || []).filter(r => r && Array.isArray(r));
                         appData.goals = (data.goals || []).filter(r => r && Array.isArray(r));
                         appData.milestones = (data.milestones || []).filter(r => r && Array.isArray(r));
+                        // Default view for Profile 2 is 'team'
+                        if (appData.user.perfil == 2) appData.execViewToggle = 'team';
                         initApp();
                     } catch (e) {
                         handleFatalError(e);
@@ -639,6 +727,12 @@
                 }
                 document.getElementById('user-greeting').innerHTML = `Hola, <span class="text-indigo-600 font-bold">${appData.user.nombre || 'Usuario'}</span>`;
                 document.getElementById('user-initial').innerText = (appData.user.nombre || "U").charAt(0);
+                // Profile 2 Switch Visibility (Apply to both versions)
+                if (appData.user.perfil == 2) {
+                    document.getElementById('exec-toggle-container').classList.remove('hidden');
+                    document.getElementById('init-toggle-container').classList.remove('hidden');
+                    updateToggleUI();
+                }
                 if (appData.user.perfil == 3) {
                     document.getElementById('btn-vpe').classList.add('hidden');
                     switchView('initiatives');
@@ -650,6 +744,31 @@
             } catch (e) {
                 handleFatalError(e);
             }
+        }
+        function setExecToggle(val) {
+            appData.execViewToggle = val;
+            updateToggleUI();
+            buildVPEView();
+            buildInitiativesView();
+        }
+        function updateToggleUI() {
+            const isTeam = appData.execViewToggle === 'team';
+            const targets = [
+                { team: 'toggle-team', all: 'toggle-all' },
+                { team: 'toggle-team-init', all: 'toggle-all-init' }
+            ];
+            targets.forEach(ids => {
+                const btnTeam = document.getElementById(ids.team);
+                const btnAll = document.getElementById(ids.all);
+                if (!btnTeam || !btnAll) return;
+                if (isTeam) {
+                    btnTeam.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter bg-indigo-600 text-white shadow-md";
+                    btnAll.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter text-slate-400 hover:text-indigo-500";
+                } else {
+                    btnAll.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter bg-indigo-600 text-white shadow-md";
+                    btnTeam.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter text-slate-400 hover:text-indigo-500";
+                }
+            });
         }
         function switchView(viewId) {
             document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
@@ -695,32 +814,64 @@
             const tbody = document.getElementById('vpe-table-body');
             tbody.innerHTML = '';
             const vpeMap = {};
-            // Metas mapping (Start with goals)
+            // 1. Dynamic Indices discovery
+            const potIdx = findIdx(['total eficiencia identificada', 'potencial ($)'], 18);
+            const matIdx = findIdx(['materializado ($)'], 80);
+            const catIdx = findIdx(['categoria', 'fuente', 'manos'], 6);
+            const vpeIdx = findIdx(['vpe'], 3);
+            const deptIdx = findIdx(['departamento', 'equipo'], 4);
+            const respIdx1 = findIdx(['responsable primario'], 14);
+            // Metas mapping
             appData.goals.slice(1).forEach(row => {
                 if (row && row[0]) vpeMap[String(row[0]).trim()] = { meta: parseFloat(row[1]) || 0, pot: 0, mat: 0 };
             });
-            const potIdx = 46; // Column AU
-            const matIdx = 80; // Column CC
-            let q1 = 0, q2 = 0, q3 = 0, q4 = 0, pyg = 0, totalPot = 0, totalMat = 0;
-            appData.baseData.forEach(row => {
-                if (!row) return;
-                const vpe = row[3] ? String(row[3]).trim() : 'Sin VPE';
+            let q1E = 0, q2E = 0, q3E = 0, q4E = 0;
+            let q1M = 0, q2M = 0, q3M = 0, q4M = 0;
+            let pyg = 0, totalPot = 0, totalMat = 0;
+            const filteredBase = appData.baseData.filter(row => {
+                if (!row) return false;
+                // 2. Profile Visibility Logic
+                // Profile 1 (Admin) ALWAYS enters with 'all' and bypasses team filter
+                if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
+                    const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
+                    const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
+                    // Match by Dept Name OR by Colleague Names
+                    const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
+                        [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
+                    );
+                    if (!isOwnTeam) return false;
+                }
+                // 3. Category Filter
+                const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
+                const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
+                    const l = f.toLowerCase();
+                    return rowCat.includes(l) || l.includes(rowCat);
+                });
+                if (!passCat) return false;
+                // 4. VPE Filter
+                const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
+                const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
+                if (!passVpe) return false;
+                return true;
+            });
+            filteredBase.forEach(row => {
+                const vpe = row[vpeIdx] ? String(row[vpeIdx]).trim() : 'Sin VPE';
                 if (!vpeMap[vpe]) vpeMap[vpe] = { meta: 0, pot: 0, mat: 0 };
-                const p = parseFloat(row[potIdx]) || 0;
-                const m = parseFloat(row[matIdx]) || 0;
-                vpeMap[vpe].pot += p;
-                vpeMap[vpe].mat += m;
-                totalPot += p;
-                totalMat += m;
-                q1 += parseFloat(row[51]) || 0; q2 += parseFloat(row[52]) || 0;
-                q3 += parseFloat(row[53]) || 0; q4 += parseFloat(row[54]) || 0;
+                const p = parseFloat(String(row[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                const m = parseFloat(String(row[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                vpeMap[vpe].pot += p; vpeMap[vpe].mat += m;
+                totalPot += p; totalMat += m;
+                q1E += parseFloat(row[51]) || 0; q2E += parseFloat(row[52]) || 0;
+                q3E += parseFloat(row[53]) || 0; q4E += parseFloat(row[54]) || 0;
+                q1M += parseFloat(row[85]) || 0; q2M += parseFloat(row[86]) || 0;
+                q3M += parseFloat(row[87]) || 0; q4M += parseFloat(row[88]) || 0;
                 pyg += parseFloat(row[89]) || 0;
             });
             document.getElementById('pyg-total').innerText = `$${(pyg / 1000000).toFixed(1)}M`;
             document.getElementById('pot-total-exec').innerText = `$${(totalPot / 1000000).toFixed(1)}M`;
             document.getElementById('mat-total-exec').innerText = `$${(totalMat / 1000000).toFixed(1)}M`;
             const labels = [], pots = [];
-            Object.keys(vpeMap).sort().forEach(vpe => {
+            Object.keys(vpeMap).sort((a, b) => vpeMap[b].meta - vpeMap[a].meta).forEach(vpe => {
                 const i = vpeMap[vpe];
                 labels.push(vpe); pots.push(i.pot / 1000000);
                 const tr = document.createElement('tr');
@@ -736,9 +887,25 @@
                 `;
                 tbody.appendChild(tr);
             });
-            renderVPECharts(labels, pots, [q1, q2, q3, q4]);
+            renderVPECharts(labels, pots, [q1E, q2E, q3E, q4E], [q1M, q2M, q3M, q4M]);
+            const catBox = document.getElementById('vpe-category-filters');
+            if (catBox) {
+                catBox.innerHTML = '';
+                ['Manos Extendidas', 'Gasto de Personal'].forEach(v => {
+                    const isActive = appData.catFilters.has(v);
+                    const b = document.createElement('button');
+                    b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
+                    b.innerText = v;
+                    b.onclick = () => {
+                        if (appData.catFilters.has(v)) appData.catFilters.delete(v);
+                        else appData.catFilters.add(v);
+                        buildVPEView(); buildInitiativesView();
+                    };
+                    catBox.appendChild(b);
+                });
+            }
         }
-        function renderVPECharts(labels, pots, qData) {
+        function renderVPECharts(labels, pots, qExpected, qMaterialized) {
             const ctxQ = document.getElementById('vpe-quarter-chart').getContext('2d');
             const ctxP = document.getElementById('vpe-pie-chart').getContext('2d');
             if (vpeChartInstance) vpeChartInstance.destroy();
@@ -747,24 +914,34 @@
             const textColor = isDark ? '#f1f5f9' : '#1e293b';
             const gridColor = isDark ? '#334155' : '#f1f5f9';
             vpeChartInstance = new Chart(ctxQ, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                    datasets: [{
-                        data: qData.map(v => v / 1000000),
-                        borderColor: '#6366f1',
-                        borderWidth: 6,
-                        pointRadius: 8,
-                        pointHoverRadius: 12,
-                        pointBackgroundColor: '#6366f1',
-                        tension: 0.4,
-                        fill: false
-                    }]
+                    datasets: [
+                        {
+                            label: 'Esperado',
+                            data: qExpected.map(v => v / 1000000),
+                            backgroundColor: '#818cf8',
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Materializado',
+                            data: qMaterialized.map(v => v / 1000000),
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: { color: textColor, font: { weight: 'bold' } }
+                        }
+                    },
                     scales: {
                         y: { grid: { color: gridColor }, ticks: { color: textColor, font: { weight: 'bold' } } },
                         x: { grid: { display: false }, ticks: { color: textColor, font: { weight: 'bold' } } }
@@ -825,35 +1002,98 @@
             };
             buildChips('responsable-filters', resps, appData.respFilters);
             buildChips('vpe-filters', vpes, appData.vpeFilters);
+            // VPE Filter visibility (Only Profile 1)
+            const vpeP = document.getElementById('vpe-filter-parent');
+            if (vpeP) vpeP.className = appData.user.perfil == 1 ? "block" : "hidden";
             const tbody = document.getElementById('initiatives-table-body');
             tbody.innerHTML = '';
-            const filtered = getFilteredData();
-            const potIdx = 46; // Column AU
-            const matIdx = 80; // Column CC
-            // Summary Calculation
-            let fPot = 0, fMat = 0;
+            const potIdx = findIdx(['potencial ($)'], 18);
+            const matIdx = findIdx(['materializado ($)'], 80);
+            const potFteIdx = findIdx(['potencial (fte)'], 17);
+            const matFteIdx = findIdx(['materializado (fte)'], 79);
+            const catIdx = findIdx(['categoria', 'fuente', 'manos'], 6);
+            const vpeIdx = findIdx(['vpe'], 3);
+            const deptIdx = findIdx(['departamento', 'equipo'], 4);
+            let fPot = 0, fMat = 0, fPotFte = 0, fMatFte = 0;
+            const filtered = appData.baseData.filter(row => {
+                if (!row) return false;
+                // 1. Profile / Team Toggle logic
+                if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
+                    const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
+                    const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
+                    const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
+                        [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
+                    );
+                    if (!isOwnTeam) return false;
+                }
+                // 2. Filters
+                const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
+                const respName = row[10] ? String(row[10]).trim() : '';
+                const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
+                const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
+                const passResp = appData.respFilters.size === 0 || appData.respFilters.has(respName);
+                const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
+                    const l = f.toLowerCase();
+                    return rowCat.includes(l) || l.includes(rowCat);
+                });
+                return passVpe && passResp && passCat;
+            });
             filtered.forEach(r => {
-                fPot += parseFloat(r[potIdx]) || 0;
-                fMat += parseFloat(r[matIdx]) || 0;
+                const p = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                const m = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                fPot += p; fMat += m;
+                fPotFte += parseFloat(r[potFteIdx]) || 0; fMatFte += parseFloat(r[matFteIdx]) || 0;
             });
             document.getElementById('count-init').innerText = filtered.length;
             document.getElementById('pot-init').innerText = `$${(fPot / 1000000).toFixed(1)}M`;
             document.getElementById('mat-init').innerText = `$${(fMat / 1000000).toFixed(1)}M`;
+            document.getElementById('pot-fte-init').innerText = fPotFte.toFixed(1);
+            document.getElementById('mat-fte-init').innerText = fMatFte.toFixed(1);
+            // Category Filter Rendering (Unified Logic for Initiatives View)
+            const catBoxInit = document.getElementById('init-category-filters');
+            if (catBoxInit) {
+                catBoxInit.innerHTML = '';
+                ['Manos Extendidas', 'Gasto de Personal'].forEach(v => {
+                    const isActive = appData.catFilters.has(v);
+                    const b = document.createElement('button');
+                    b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
+                    b.innerText = v;
+                    b.onclick = () => {
+                        if (appData.catFilters.has(v)) appData.catFilters.delete(v);
+                        else appData.catFilters.add(v);
+                        buildInitiativesView();
+                        if (document.getElementById('view-vpe').classList.contains('hidden') === false) buildVPEView();
+                    };
+                    catBoxInit.appendChild(b);
+                });
+            }
             filtered.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all border-b border-slate-100 dark:border-slate-800";
-                const cod = row[0], name = row[1];
-                const pot = parseFloat(row[potIdx]) || 0;
-                const mat = parseFloat(row[matIdx]) || 0;
-                const vpe = row[3] || 'N/A', resp = row[10] || 'N/A', type = row[6] || 'N/A';
+                const cod = row[0], name = row[1], type = row[6], vpe = row[vpeIdx], resp = row[10];
+                const pUSD = parseFloat(String(row[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                const mUSD = parseFloat(String(row[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                const pFTE = parseFloat(row[potFteIdx]) || 0;
+                const mFTE = parseFloat(row[matFteIdx]) || 0;
+                const avance = pUSD > 0 ? (mUSD / pUSD * 100).toFixed(1) : "0.0";
                 tr.innerHTML = `
-                    <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[400px] whitespace-normal leading-relaxed" title="${name}">${name}</td>
+                    <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[300px] whitespace-normal leading-relaxed" title="${name}">${name}</td>
                     <td class="px-4 py-5 font-mono text-[10px] text-slate-500 dark:text-slate-400 font-bold">${cod || 'N/A'}</td>
                     <td class="px-4 py-5 text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter">${type || 'N/A'}</td>
                     <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(vpe || 'N/A').toLowerCase()}</td>
                     <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(resp || 'N/A').toLowerCase()}</td>
-                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-right whitespace-nowrap">$${(pot / 1000000).toFixed(1)}M</td>
-                    <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${(mat / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-right whitespace-nowrap">$${(pUSD / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-indigo-400 dark:text-indigo-300 text-right whitespace-nowrap">${pFTE.toFixed(1)}</td>
+                    <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${(mUSD / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-emerald-400 dark:text-emerald-300 text-right whitespace-nowrap">${mFTE.toFixed(1)}</td>
+                    <td class="px-4 py-5 text-center">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] font-black text-slate-600 dark:text-slate-300">${avance}%</span>
+                            <div class="w-12 h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
+                                <div class="h-full bg-indigo-500" style="width: ${Math.min(parseFloat(avance), 100)}%"></div>
+                            </div>
+                        </div>
+                    </td>
                     <td class="px-4 py-5 text-center"><button onclick="openHitosModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-full transition-all" title="Ver Hitos">🚩</button></td>
                     <td class="px-4 py-5 text-center"><button onclick="openModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded-full transition-all">✎</button></td>
                 `;
@@ -861,65 +1101,93 @@
             });
             const gantt = document.getElementById('gantt-container');
             gantt.innerHTML = '';
-            // Collect all milestones for the current filtered initiatives
             const currentCodes = new Set(filtered.map(r => String(r[0]).trim()));
             const monthMilestones = appData.milestones.filter(m => m && m[1] && currentCodes.has(String(m[1]).trim()));
-            // Gantt Header with Months
             const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             const gHeader = document.createElement('div');
             gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
             let monthLabels = '';
             months.forEach((m, idx) => {
-                const dayHitos = monthMilestones.filter(h => {
-                    const d = new Date(h[3]);
-                    return !isNaN(d.getTime()) && d.getMonth() === idx;
-                });
-                const hasHito = dayHitos.length > 0;
-                const hitoNames = dayHitos.map(h => `• ${h[2]}`).join('\n');
-                const escapedHitoNames = hitoNames.replace(/'/g, "\\'").replace(/\n/g, "\\n");
-                const flagShadow = hasHito ? `drop-shadow(0 4px 6px rgba(244,63,94,0.4))` : '';
-                monthLabels += `
-                    <div class="flex-1 flex flex-col items-center justify-center">
-                        <div class="text-[11px] font-black uppercase tracking-widest leading-none mb-2">${m}</div>
-                        <div class="h-4"></div>
-                    </div>
-                `;
+                monthLabels += `<div class="flex-1 flex flex-col items-center justify-center"><div class="text-[11px] font-black uppercase tracking-widest leading-none mb-2">${m}</div><div class="h-4"></div></div>`;
             });
             gHeader.innerHTML = `<div class="w-80 shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-3 pb-2 border-b-2 border-slate-100 dark:border-slate-800">${monthLabels}</div>`;
             gantt.appendChild(gHeader);
-            const curMonth = new Date().getMonth();
             filtered.forEach(row => {
                 if (!row) return;
-                const cod = row[0] || "";
                 const exp = row.slice(33, 45), mat = row.slice(67, 79);
-                // Get milestones for this initiative
-                const rowMilestones = appData.milestones.filter(m => m && m[1] && String(m[1]).trim() == String(cod).trim());
                 const rowDiv = document.createElement('div');
                 rowDiv.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl";
                 let segments = '';
                 for (let i = 0; i < 12; i++) {
                     const e = parseFloat(exp[i]) || 0, m = parseFloat(mat[i]) || 0;
-                    const w = e > 0 ? Math.min((m / e) * 100, 100) : (m > 0 ? 100 : 0);
+                    const w = e > 0 ? (m / e) * 100 : (m > 0 ? 100 : 0);
+                    const isExcess = m > e && e > 0;
                     const dispE = e > 0 ? (e / 1000000).toFixed(1) + 'M' : '';
                     const dispM = m > 0 ? (m / 1000000).toFixed(1) + 'M' : '';
-                    // Initiative-specific milestones for this month segment
-                    const monthHitos = rowMilestones.filter(h => {
-                        const d = new Date(h[3]);
-                        return !isNaN(d.getTime()) && d.getMonth() === i;
-                    });
-                    const segmentHasHito = monthHitos.length > 0;
-                    const hNames = monthHitos.map(h => `• ${h[2]}`).join('\n');
-                    const escHNames = hNames.replace(/'/g, "\\'").replace(/\n/g, "\\n");
-                    segments += `<div class="line-segment">
-                        ${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}
-                        <div class="gantt-line-expected ${e === 0 ? 'hidden' : ''}"></div>
-                        ${segmentHasHito ? `<div class="gantt-flag animate-bounce-subtle" title="${hNames}" onclick="showToast('Hito de ${String(row[1]).replace(/'/g, "")} en ${months[i]}:\\n${escHNames}')">🚩</div>` : ''}
-                        <div class="gantt-line-materialized ${m === 0 ? 'shaded' : ''}" style="width:${w}%"></div>
-                        ${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}
-                    </div>`;
+                    segments += `<div class="line-segment">${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${e === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${m === 0 ? 'shaded' : ''} ${isExcess ? 'bg-emerald-400 shadow-lg shadow-emerald-500/50' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}</div>`;
                 }
                 rowDiv.innerHTML = `<div class="w-80 shrink-0 font-black text-sm truncate text-slate-900 dark:text-white" title="${row[1] || 'Sin Nombre'}">${row[1] || 'Sin Nombre'}</div><div class="gantt-lines-container">${segments}</div>`;
                 gantt.appendChild(rowDiv);
+            });
+            renderInitCharts(filtered);
+        }
+        function renderInitCharts(filtered) {
+            let q1E = 0, q2E = 0, q3E = 0, q4E = 0, q1M = 0, q2M = 0, q3M = 0, q4M = 0;
+            const initMap = {};
+            const potIdx = findIdx(['potencial ($)'], 18);
+            filtered.forEach(row => {
+                const name = row[1] || 'Sin Nombre';
+                const pVal = parseFloat(String(row[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                initMap[name] = (initMap[name] || 0) + pVal;
+                // AZ, BA, BB, BC (Indices 51, 52, 53, 54) - Expected Quarters
+                q1E += parseFloat(row[51]) || 0; q2E += parseFloat(row[52]) || 0;
+                q3E += parseFloat(row[53]) || 0; q4E += parseFloat(row[54]) || 0;
+                // CH, CI, CJ, CK (Indices 85, 86, 87, 88) - Materialized Quarters
+                q1M += parseFloat(row[85]) || 0; q2M += parseFloat(row[86]) || 0;
+                q3M += parseFloat(row[87]) || 0; q4M += parseFloat(row[88]) || 0;
+            });
+            const labels = Object.keys(initMap).sort((a, b) => initMap[b] - initMap[a]).slice(0, 6);
+            const pots = labels.map(l => initMap[l] / 1000000);
+            const ctxQ = document.getElementById('init-quarter-chart').getContext('2d');
+            const ctxP = document.getElementById('init-pie-chart').getContext('2d');
+            if (initQChartInstance) initQChartInstance.destroy();
+            if (initPieChartInstance) initPieChartInstance.destroy();
+            const isDark = document.body.classList.contains('dark');
+            const textColor = isDark ? '#f1f5f9' : '#1e293b';
+            initQChartInstance = new Chart(ctxQ, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [
+                        { label: 'Esperado', data: [q1E, q2E, q3E, q4E].map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
+                        { label: 'Materializado', data: [q1M, q2M, q3M, q4M].map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { color: textColor } },
+                        title: { display: true, text: 'Eficiencia Trimestral ($M)', color: textColor, font: { size: 12, weight: 'bold' } }
+                    }
+                }
+            });
+            initPieChartInstance = new Chart(ctxP, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: pots,
+                        backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } },
+                        title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } }
+                    }
+                }
             });
         }
         function showToast(msg) {

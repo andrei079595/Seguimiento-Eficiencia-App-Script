@@ -623,6 +623,11 @@
                                     <span
                                         class="text-[10px] font-black uppercase tracking-widest text-slate-500">Materializado</span>
                                 </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">🚩</span>
+                                    <span
+                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Hitos</span>
+                                </div>
                             </div>
                         </div>
                         <div id="gantt-container" class="space-y-6"></div>
@@ -785,19 +790,16 @@
         const findIdx = (keywords, fallback, exactMatch = false) => {
             const h = appData.headers || [];
             const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-            // 1. Precise Match
             if (exactMatch) {
                 const eIdx = h.findIndex(hdr => hdr && keywords.some(k => hdr.toLowerCase() === k.toLowerCase()));
                 if (eIdx !== -1) return eIdx;
             }
-            // 2. Contains all keywords AND 'total' or 'consolidado'
             const tIdx = h.findIndex(hdr => {
                 if (!hdr) return false;
                 const lower = hdr.toLowerCase();
                 return keywords.every(k => lower.includes(k.toLowerCase())) && (lower.includes('total') || lower.includes('consolidado') || lower.includes('cierre'));
             });
             if (tIdx !== -1) return tIdx;
-            // 3. Contains all keywords AND DOES NOT contain a month name (to avoid Jan, Feb, etc.)
             const sIdx = h.findIndex(hdr => {
                 if (!hdr) return false;
                 const lower = hdr.toLowerCase();
@@ -806,7 +808,6 @@
                 return hasKeywords && !hasMonth;
             });
             if (sIdx !== -1) return sIdx;
-            // 4. Just contains keywords (last resort)
             const idx = h.findIndex(hdr => hdr && keywords.every(k => hdr.toLowerCase().includes(k.toLowerCase())));
             return idx === -1 ? fallback : idx;
         };
@@ -814,14 +815,11 @@
             const tbody = document.getElementById('vpe-table-body');
             tbody.innerHTML = '';
             const vpeMap = {};
-            // 1. Dynamic Indices discovery
             const potIdx = findIdx(['total eficiencia identificada', 'potencial ($)'], 18);
             const matIdx = findIdx(['materializado ($)'], 80);
             const catIdx = findIdx(['categoria', 'fuente', 'manos'], 6);
             const vpeIdx = findIdx(['vpe'], 3);
             const deptIdx = findIdx(['departamento', 'equipo'], 4);
-            const respIdx1 = findIdx(['responsable primario'], 14);
-            // Metas mapping
             appData.goals.slice(1).forEach(row => {
                 if (row && row[0]) vpeMap[String(row[0]).trim()] = { meta: parseFloat(row[1]) || 0, pot: 0, mat: 0 };
             });
@@ -830,25 +828,20 @@
             let pyg = 0, totalPot = 0, totalMat = 0;
             const filteredBase = appData.baseData.filter(row => {
                 if (!row) return false;
-                // 2. Profile Visibility Logic
-                // Profile 1 (Admin) ALWAYS enters with 'all' and bypasses team filter
                 if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
                     const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
                     const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
-                    // Match by Dept Name OR by Colleague Names
                     const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
                         [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
                     );
                     if (!isOwnTeam) return false;
                 }
-                // 3. Category Filter
                 const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
                 const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
                     const l = f.toLowerCase();
                     return rowCat.includes(l) || l.includes(rowCat);
                 });
                 if (!passCat) return false;
-                // 4. VPE Filter
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
                 if (!passVpe) return false;
@@ -896,11 +889,7 @@
                     const b = document.createElement('button');
                     b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
                     b.innerText = v;
-                    b.onclick = () => {
-                        if (appData.catFilters.has(v)) appData.catFilters.delete(v);
-                        else appData.catFilters.add(v);
-                        buildVPEView(); buildInitiativesView();
-                    };
+                    b.onclick = () => { if (appData.catFilters.has(v)) appData.catFilters.delete(v); else appData.catFilters.add(v); buildVPEView(); buildInitiativesView(); };
                     catBox.appendChild(b);
                 });
             }
@@ -918,30 +907,13 @@
                 data: {
                     labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                     datasets: [
-                        {
-                            label: 'Esperado',
-                            data: qExpected.map(v => v / 1000000),
-                            backgroundColor: '#818cf8',
-                            borderRadius: 6
-                        },
-                        {
-                            label: 'Materializado',
-                            data: qMaterialized.map(v => v / 1000000),
-                            backgroundColor: '#10b981',
-                            borderRadius: 6
-                        }
+                        { label: 'Esperado', data: qExpected.map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
+                        { label: 'Materializado', data: qMaterialized.map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'bottom',
-                            labels: { color: textColor, font: { weight: 'bold' } }
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: textColor, font: { weight: 'bold' } } } },
                     scales: {
                         y: { grid: { color: gridColor }, ticks: { color: textColor, font: { weight: 'bold' } } },
                         x: { grid: { display: false }, ticks: { color: textColor, font: { weight: 'bold' } } }
@@ -950,35 +922,8 @@
             });
             vpePieChartInstance = new Chart(ctxP, {
                 type: 'doughnut',
-                data: {
-                    labels,
-                    datasets: [{
-                        data: pots,
-                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'],
-                        borderWidth: 0,
-                        hoverOffset: 30,
-                        spacing: 8
-                    }]
-                },
-                options: {
-                    cutout: '75%',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { color: textColor, padding: 25, font: { weight: 'bold', size: 11 } } },
-                        tooltip: { padding: 16, displayColors: true, backgroundColor: isDark ? '#1e293b' : '#ffffff', bodyColor: isDark ? '#f1f5f9' : '#1e293b' }
-                    }
-                }
-            });
-        }
-        function getFilteredData() {
-            return appData.baseData.filter(row => {
-                if (!row) return false;
-                const rowVpe = row[3] ? String(row[3]).trim() : '';
-                const rowResp = row[10] ? String(row[10]).trim() : '';
-                const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(rowVpe);
-                const passResp = appData.respFilters.size === 0 || appData.respFilters.has(rowResp);
-                return passVpe && passResp;
+                data: { labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'], borderWidth: 0, hoverOffset: 30, spacing: 8 }] },
+                options: { cutout: '75%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, padding: 25, font: { weight: 'bold', size: 11 } } }, tooltip: { padding: 16, displayColors: true, backgroundColor: isDark ? '#1e293b' : '#ffffff', bodyColor: isDark ? '#f1f5f9' : '#1e293b' } } }
             });
         }
         function buildInitiativesView() {
@@ -1002,7 +947,6 @@
             };
             buildChips('responsable-filters', resps, appData.respFilters);
             buildChips('vpe-filters', vpes, appData.vpeFilters);
-            // VPE Filter visibility (Only Profile 1)
             const vpeP = document.getElementById('vpe-filter-parent');
             if (vpeP) vpeP.className = appData.user.perfil == 1 ? "block" : "hidden";
             const tbody = document.getElementById('initiatives-table-body');
@@ -1017,7 +961,6 @@
             let fPot = 0, fMat = 0, fPotFte = 0, fMatFte = 0;
             const filtered = appData.baseData.filter(row => {
                 if (!row) return false;
-                // 1. Profile / Team Toggle logic
                 if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
                     const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
                     const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
@@ -1026,7 +969,6 @@
                     );
                     if (!isOwnTeam) return false;
                 }
-                // 2. Filters
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const respName = row[10] ? String(row[10]).trim() : '';
                 const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
@@ -1049,7 +991,6 @@
             document.getElementById('mat-init').innerText = `$${(fMat / 1000000).toFixed(1)}M`;
             document.getElementById('pot-fte-init').innerText = fPotFte.toFixed(1);
             document.getElementById('mat-fte-init').innerText = fMatFte.toFixed(1);
-            // Category Filter Rendering (Unified Logic for Initiatives View)
             const catBoxInit = document.getElementById('init-category-filters');
             if (catBoxInit) {
                 catBoxInit.innerHTML = '';
@@ -1058,12 +999,7 @@
                     const b = document.createElement('button');
                     b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
                     b.innerText = v;
-                    b.onclick = () => {
-                        if (appData.catFilters.has(v)) appData.catFilters.delete(v);
-                        else appData.catFilters.add(v);
-                        buildInitiativesView();
-                        if (document.getElementById('view-vpe').classList.contains('hidden') === false) buildVPEView();
-                    };
+                    b.onclick = () => { if (appData.catFilters.has(v)) appData.catFilters.delete(v); else appData.catFilters.add(v); buildInitiativesView(); if (document.getElementById('view-vpe').classList.contains('hidden') === false) buildVPEView(); };
                     catBoxInit.appendChild(b);
                 });
             }
@@ -1086,50 +1022,47 @@
                     <td class="px-4 py-5 font-black text-indigo-400 dark:text-indigo-300 text-right whitespace-nowrap">${pFTE.toFixed(1)}</td>
                     <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${(mUSD / 1000000).toFixed(1)}M</td>
                     <td class="px-4 py-5 font-black text-emerald-400 dark:text-emerald-300 text-right whitespace-nowrap">${mFTE.toFixed(1)}</td>
-                    <td class="px-4 py-5 text-center">
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] font-black text-slate-600 dark:text-slate-300">${avance}%</span>
-                            <div class="w-12 h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
-                                <div class="h-full bg-indigo-500" style="width: ${Math.min(parseFloat(avance), 100)}%"></div>
-                            </div>
-                        </div>
-                    </td>
+                    <td class="px-4 py-5 text-center"><div class="flex flex-col items-center"><span class="text-[10px] font-black text-slate-600 dark:text-slate-300">${avance}%</span><div class="w-12 h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${Math.min(parseFloat(avance), 100)}%"></div></div></div></td>
                     <td class="px-4 py-5 text-center"><button onclick="openHitosModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-full transition-all" title="Ver Hitos">🚩</button></td>
                     <td class="px-4 py-5 text-center"><button onclick="openModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 rounded-full transition-all">✎</button></td>
                 `;
                 tbody.appendChild(tr);
             });
-            const gantt = document.getElementById('gantt-container');
-            gantt.innerHTML = '';
-            const currentCodes = new Set(filtered.map(r => String(r[0]).trim()));
-            const monthMilestones = appData.milestones.filter(m => m && m[1] && currentCodes.has(String(m[1]).trim()));
-            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const gHeader = document.createElement('div');
-            gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
-            let monthLabels = '';
-            months.forEach((m, idx) => {
-                monthLabels += `<div class="flex-1 flex flex-col items-center justify-center"><div class="text-[11px] font-black uppercase tracking-widest leading-none mb-2">${m}</div><div class="h-4"></div></div>`;
-            });
-            gHeader.innerHTML = `<div class="w-80 shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-3 pb-2 border-b-2 border-slate-100 dark:border-slate-800">${monthLabels}</div>`;
-            gantt.appendChild(gHeader);
-            filtered.forEach(row => {
-                if (!row) return;
-                const exp = row.slice(33, 45), mat = row.slice(67, 79);
-                const rowDiv = document.createElement('div');
-                rowDiv.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl";
-                let segments = '';
-                for (let i = 0; i < 12; i++) {
-                    const e = parseFloat(exp[i]) || 0, m = parseFloat(mat[i]) || 0;
-                    const w = e > 0 ? (m / e) * 100 : (m > 0 ? 100 : 0);
-                    const isExcess = m > e && e > 0;
-                    const dispE = e > 0 ? (e / 1000000).toFixed(1) + 'M' : '';
-                    const dispM = m > 0 ? (m / 1000000).toFixed(1) + 'M' : '';
-                    segments += `<div class="line-segment">${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${e === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${m === 0 ? 'shaded' : ''} ${isExcess ? 'bg-emerald-400 shadow-lg shadow-emerald-500/50' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}</div>`;
-                }
-                rowDiv.innerHTML = `<div class="w-80 shrink-0 font-black text-sm truncate text-slate-900 dark:text-white" title="${row[1] || 'Sin Nombre'}">${row[1] || 'Sin Nombre'}</div><div class="gantt-lines-container">${segments}</div>`;
-                gantt.appendChild(rowDiv);
-            });
+            renderGantt(filtered);
             renderInitCharts(filtered);
+        }
+        function renderGantt(data) {
+            const container = document.getElementById('gantt-container'); container.innerHTML = '';
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const gHeader = document.createElement('div'); gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
+            let monthLabels = '';
+            months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[10px] uppercase tracking-widest">${m}</div>`; });
+            gHeader.innerHTML = `<div class="w-48 shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
+            container.appendChild(gHeader);
+            data.forEach(r => {
+                const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl";
+                const label = document.createElement('div'); label.className = "w-48 text-xs font-bold truncate text-slate-900 dark:text-white"; label.innerText = r[1]; label.title = r[1];
+                const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
+                const cod = String(r[0]).trim();
+                const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
+                for(let i=0;i<12;i++) {
+                    const seg = document.createElement('div'); seg.className = "line-segment";
+                    const exp = parseFloat(r[33+i])||0, mat = parseFloat(r[67+i])||0;
+                    const w = exp > 0 ? (mat/exp)*100 : (mat>0?100:0);
+                    const dispE = exp > 0 ? (exp/1e6).toFixed(1)+'M' : '';
+                    const dispM = mat > 0 ? (mat/1e6).toFixed(1)+'M' : '';
+                    seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>`:''}<div class="gantt-line-expected ${exp===0?'hidden':''}"></div><div class="gantt-line-materialized ${mat===0?'shaded':''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>`:''}`;
+                    initiativeMilestones.forEach(m => {
+                        const mDate = m[3] ? new Date(m[3]) : null;
+                        if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
+                            const flag = document.createElement('div'); flag.className = "gantt-flag animate-bounce-subtle"; flag.innerHTML = "🚩"; flag.onclick = (e) => { e.stopPropagation(); openHitosModal(cod, r[1]); };
+                            seg.appendChild(flag);
+                        }
+                    });
+                    lineContainer.appendChild(seg);
+                }
+                row.appendChild(label); row.appendChild(lineContainer); container.appendChild(row);
+            });
         }
         function renderInitCharts(filtered) {
             let q1E = 0, q2E = 0, q3E = 0, q4E = 0, q1M = 0, q2M = 0, q3M = 0, q4M = 0;
@@ -1139,10 +1072,8 @@
                 const name = row[1] || 'Sin Nombre';
                 const pVal = parseFloat(String(row[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
                 initMap[name] = (initMap[name] || 0) + pVal;
-                // AZ, BA, BB, BC (Indices 51, 52, 53, 54) - Expected Quarters
                 q1E += parseFloat(row[51]) || 0; q2E += parseFloat(row[52]) || 0;
                 q3E += parseFloat(row[53]) || 0; q4E += parseFloat(row[54]) || 0;
-                // CH, CI, CJ, CK (Indices 85, 86, 87, 88) - Materialized Quarters
                 q1M += parseFloat(row[85]) || 0; q2M += parseFloat(row[86]) || 0;
                 q3M += parseFloat(row[87]) || 0; q4M += parseFloat(row[88]) || 0;
             });
@@ -1165,98 +1096,44 @@
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: true, position: 'bottom', labels: { color: textColor } },
-                        title: { display: true, text: 'Eficiencia Trimestral ($M)', color: textColor, font: { size: 12, weight: 'bold' } }
-                    }
+                    plugins: { legend: { display: true, position: 'bottom', labels: { color: textColor } }, title: { display: true, text: 'Eficiencia Trimestral ($M)', color: textColor, font: { size: 12, weight: 'bold' } } }
                 }
             });
             initPieChartInstance = new Chart(ctxP, {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: pots,
-                        backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } },
-                        title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } }
-                    }
-                }
+                data: { labels: labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } }, title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } } } }
             });
         }
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = "show";
-            setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
-        }
-        function openModal(cod, name) {
-            currentModalData = { codigo: cod, iniciativa: name };
-            document.getElementById('modal-subtitle').innerText = `${cod} • ${name}`;
-            document.getElementById('obs-text').value = '';
-            document.getElementById('obs-modal').classList.remove('hidden');
-        }
+        function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000); }
+        function openModal(cod, name) { currentModalData = { codigo: cod, iniciativa: name }; document.getElementById('modal-subtitle').innerText = `${cod} • ${name}`; document.getElementById('obs-text').value = ''; document.getElementById('obs-modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('obs-modal').classList.add('hidden'); }
         function saveObservation() {
-            const text = document.getElementById('obs-text').value;
-            if (!text.trim()) return showToast('Por favor escribe un seguimiento.');
+            const text = document.getElementById('obs-text').value; if (!text.trim()) return showToast('Por favor escribe un seguimiento.');
             const p = { codigo: currentModalData.codigo, iniciativa: currentModalData.iniciativa, observacion: text };
-            google.script.run
-                .withSuccessHandler(() => { showToast('¡Observación guardada con éxito!'); closeModal(); })
-                .withFailureHandler(e => showToast('Error: ' + e))
-                .submitObservation(p);
+            google.script.run.withSuccessHandler(() => { showToast('¡Observación guardada con éxito!'); closeModal(); }).withFailureHandler(e => showToast('Error: ' + e)).submitObservation(p);
         }
         function openHitosModal(cod, name) {
             const searchCod = String(cod || "").trim();
             const hitos = appData.milestones.filter(r => r && r[1] && String(r[1]).trim() == searchCod);
-            const list = document.getElementById('hitos-list');
-            list.innerHTML = '';
-            document.getElementById('hitos-subtitle').innerText = `${cod} • ${name}`;
-            if (hitos.length === 0) {
-                list.innerHTML = '<p class="text-slate-400 font-bold text-center py-10">No hay hitos registrados para esta iniciativa.</p>';
-            } else {
+            const list = document.getElementById('hitos-list'); list.innerHTML = ''; document.getElementById('hitos-subtitle').innerText = `${cod} • ${name}`;
+            if (hitos.length === 0) list.innerHTML = '<p class="text-slate-400 font-bold text-center py-10">No hay hitos registrados para esta iniciativa.</p>';
+            else {
                 hitos.forEach(h => {
-                    // Col A: Name, Col B: Code, Col C: Hito, Col D: Date, Col E: Status
                     const dateVal = h[3];
                     const isDone = h[4] === true || h[4] === "VERDADERO" || h[4] === "TRUE";
                     const statusText = isDone ? 'Completado' : 'Sin completar';
                     const statusClass = isDone ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
                     const date = dateVal ? (isNaN(new Date(dateVal).getTime()) ? dateVal : new Date(dateVal).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })) : 'Sin fecha';
-                    const div = document.createElement('div');
-                    div.className = "relative pl-10";
-                    div.innerHTML = `
-                        <div class="absolute left-[-1px] top-1 h-8 w-8 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 flex items-center justify-center z-10">
-                            <span class="text-white text-[10px]">🚩</span>
-                        </div>
-                        <div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-indigo-900/20 shadow-sm">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">${date}</span>
-                                <span class="px-2 py-0.5 rounded-full text-[8px] font-black ${statusClass} uppercase">${statusText}</span>
-                            </div>
-                            <h4 class="font-bold text-slate-800 dark:text-white leading-tight">${h[2] || 'Sin título'}</h4>
-                            <p class="text-xs text-slate-500 mt-2">${h[0] || ''}</p>
-                        </div>
-                    `;
+                    const div = document.createElement('div'); div.className = "relative pl-10";
+                    div.innerHTML = `<div class="absolute left-[-1px] top-1 h-8 w-8 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 flex items-center justify-center z-10"><span class="text-white text-[10px]">🚩</span></div><div class="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-100 dark:border-indigo-900/20 shadow-sm"><div class="flex justify-between items-center mb-2"><span class="text-[10px] font-black text-indigo-500 uppercase tracking-widest">${date}</span><span class="px-2 py-0.5 rounded-full text-[8px] font-black ${statusClass} uppercase">${statusText}</span></div><h4 class="font-bold text-slate-800 dark:text-white leading-tight">${h[2] || 'Sin título'}</h4><p class="text-xs text-slate-500 mt-2">${h[0] || ''}</p></div>`;
                     list.appendChild(div);
                 });
             }
             document.getElementById('hitos-modal').classList.remove('hidden');
         }
-        function closeHitosModal() {
-            document.getElementById('hitos-modal').classList.add('hidden');
-        }
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const isDark = document.body.classList.contains('dark');
-            document.getElementById('dark-mode-text').innerText = isDark ? 'Modo Día' : 'Modo Noche';
-            buildVPEView(); buildInitiativesView();
-        }
+        function closeHitosModal() { document.getElementById('hitos-modal').classList.add('hidden'); }
+        function toggleDarkMode() { document.body.classList.toggle('dark'); buildVPEView(); buildInitiativesView(); }
     </script>
 </body>
 </html>

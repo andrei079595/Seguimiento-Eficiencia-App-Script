@@ -14,11 +14,14 @@ function getInitialData() {
     const paramsData = paramsSheet.getDataRange().getValues();
     let userProfile = null;
     for (let i = 1; i < paramsData.length; i++) {
-        if (paramsData[i][2] === userEmail) {
+        const rowEmail = paramsData[i][2] ? paramsData[i][2].toString().toLowerCase().trim() : '';
+        if (rowEmail === userEmail.toLowerCase().trim()) {
             userProfile = {
                 nombre: paramsData[i][0],
                 correo: paramsData[i][2],
-                perfil: parseInt(paramsData[i][5]) || 3
+                departamento: paramsData[i][4], // Column E
+                perfil: parseInt(paramsData[i][5]) || 3, // Column F
+                deptUsers: paramsData.filter(r => r[4] === paramsData[i][4]).map(r => r[0]) // Same department users
             };
             break;
         }
@@ -28,13 +31,18 @@ function getInitialData() {
     const baseSheet = ss.getSheetByName('Base');
     if (!baseSheet) throw new Error('No se encontró la pestaña "Base"');
     const baseData = baseSheet.getDataRange().getValues();
-    // Safety check for empty base
     if (baseData.length <= 1) return { user: userProfile, baseData: [], goals: [], milestones: [], headers: [] };
     const headers = baseData[0];
     const rows = baseData.slice(1);
     // Filter by Profile
     let filteredBase = rows;
-    if (userProfile.perfil == 3) {
+    // Filter logic for initial load: 
+    // Profile 1 & 2: Full Access (Profile 2 will use frontend toggle to filter departmental view)
+    if (userProfile.perfil == 1 || userProfile.perfil == 2) {
+        filteredBase = rows;
+    }
+    // Profile 3: Individual Access
+    else if (userProfile.perfil == 3) {
         filteredBase = rows.filter(row => {
             return row[14] === userProfile.nombre || row[15] === userProfile.nombre || row[16] === userProfile.nombre;
         });
@@ -53,10 +61,7 @@ function getInitialData() {
 }
 function pruneEmptyRows(data) {
     if (!data || data.length === 0) return [];
-    // 1. Remove rows that are entirely empty
     const filtered = data.filter(row => row.some(cell => cell !== "" && cell !== null && cell !== undefined));
-    // 2. Sanitize all cells to simple primitives (String/Number/Boolean/Null)
-    // This prevents serialization errors with problematic Date objects or complex types
     return filtered.map(row => row.map(cell => {
         if (cell === "" || cell === null || cell === undefined) return null;
         if (cell instanceof Date) {
@@ -69,7 +74,6 @@ function pruneEmptyRows(data) {
 function submitObservation(payload) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const userEmail = Session.getActiveUser().getEmail();
-    // 1. Get user name from Parámetros for Column C
     let senderName = payload.nombre || 'Desconocido';
     const paramsSheet = ss.getSheetByName('Parámetros');
     if (paramsSheet) {
@@ -83,15 +87,12 @@ function submitObservation(payload) {
             }
         }
     }
-    // 2. Get/Create Observations sheet
     let obsSheet = ss.getSheetByName('Observaciones Responsables');
     if (!obsSheet) {
         obsSheet = ss.insertSheet('Observaciones Responsables');
         obsSheet.appendRow(['Iniciativa', 'Código', 'Nombre', 'Observación', 'Fecha']);
     }
-    // 3. Record entry
     const date = new Date();
-    // A: Iniciativa, B: Código, C: Nombre, D: Observación, E: Fecha
     obsSheet.appendRow([
         payload.iniciativa || 'Unknown',
         payload.codigo || 'N/A',

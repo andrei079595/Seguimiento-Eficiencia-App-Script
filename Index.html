@@ -456,9 +456,6 @@
                                         <th
                                             class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
                                             % MAT / Meta</th>
-                                        <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
-                                            Eficiencia MAT</th>
                                     </tr>
                                 </thead>
                                 <tbody id="vpe-table-body"></tbody>
@@ -685,6 +682,10 @@
             vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(),
             execViewToggle: 'all' // 'all' or 'team'
         };
+        const fmt = (v) => {
+            const val = parseFloat(v) || 0;
+            return (val / 1000000).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0, useGrouping: true });
+        };
         let currentModalData = null;
         let vpeChartInstance = null, vpePieChartInstance = null;
         let initQChartInstance = null, initPieChartInstance = null;
@@ -860,9 +861,9 @@
                 q3M += parseFloat(row[87]) || 0; q4M += parseFloat(row[88]) || 0;
                 pyg += parseFloat(row[89]) || 0;
             });
-            document.getElementById('pyg-total').innerText = `$${(pyg / 1000000).toFixed(1)}M`;
-            document.getElementById('pot-total-exec').innerText = `$${(totalPot / 1000000).toFixed(1)}M`;
-            document.getElementById('mat-total-exec').innerText = `$${(totalMat / 1000000).toFixed(1)}M`;
+            document.getElementById('pyg-total').innerText = `$${fmt(pyg)}M`;
+            document.getElementById('pot-total-exec').innerText = `$${fmt(totalPot)}M`;
+            document.getElementById('mat-total-exec').innerText = `$${fmt(totalMat)}M`;
             const labels = [], pots = [];
             Object.keys(vpeMap).sort((a, b) => vpeMap[b].meta - vpeMap[a].meta).forEach(vpe => {
                 const i = vpeMap[vpe];
@@ -871,12 +872,11 @@
                 tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all";
                 tr.innerHTML = `
                     <td class="px-8 py-5 font-black text-slate-900 dark:text-slate-100">${vpe}</td>
-                    <td class="px-6 py-5 font-mono text-slate-500 dark:text-slate-400">$${(i.meta / 1000000).toFixed(1)}M</td>
-                    <td class="px-6 py-5 font-mono text-indigo-600 dark:text-indigo-400 font-black">$${(i.pot / 1000000).toFixed(1)}M</td>
-                    <td class="px-6 py-5 font-mono text-emerald-600 dark:text-emerald-400 font-black">$${(i.mat / 1000000).toFixed(1)}M</td>
+                    <td class="px-6 py-5 font-mono text-slate-500 dark:text-slate-400">$${fmt(i.meta)}M</td>
+                    <td class="px-6 py-5 font-mono text-indigo-600 dark:text-indigo-400 font-black">$${fmt(i.pot)}M</td>
+                    <td class="px-6 py-5 font-mono text-emerald-600 dark:text-emerald-400 font-black">$${fmt(i.mat)}M</td>
                     <td class="px-6 py-5 font-black text-xs text-indigo-500">${(i.meta > 0 ? i.pot / i.meta * 100 : 0).toFixed(1)}%</td>
                     <td class="px-6 py-5 font-black text-xs text-emerald-500">${(i.meta > 0 ? i.mat / i.meta * 100 : 0).toFixed(1)}%</td>
-                    <td class="px-6 py-5"><span class="px-3 py-1 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">${(i.pot > 0 ? i.mat / i.pot * 100 : 0).toFixed(0)}% Efic.</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -905,10 +905,10 @@
             vpeChartInstance = new Chart(ctxQ, {
                 type: 'bar',
                 data: {
-                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Total'],
                     datasets: [
-                        { label: 'Esperado', data: qExpected.map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
-                        { label: 'Materializado', data: qMaterialized.map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
+                        { label: 'Esperado', data: [...qExpected, qExpected.reduce((a, b) => a + b, 0)].map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
+                        { label: 'Materializado', data: [...qMaterialized, qMaterialized.reduce((a, b) => a + b, 0)].map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
                     ]
                 },
                 options: {
@@ -987,8 +987,8 @@
                 fPotFte += parseFloat(r[potFteIdx]) || 0; fMatFte += parseFloat(r[matFteIdx]) || 0;
             });
             document.getElementById('count-init').innerText = filtered.length;
-            document.getElementById('pot-init').innerText = `$${(fPot / 1000000).toFixed(1)}M`;
-            document.getElementById('mat-init').innerText = `$${(fMat / 1000000).toFixed(1)}M`;
+            document.getElementById('pot-init').innerText = `$${fmt(fPot)}M`;
+            document.getElementById('mat-init').innerText = `$${fmt(fMat)}M`;
             document.getElementById('pot-fte-init').innerText = fPotFte.toFixed(1);
             document.getElementById('mat-fte-init').innerText = fMatFte.toFixed(1);
             const catBoxInit = document.getElementById('init-category-filters');
@@ -1018,9 +1018,9 @@
                     <td class="px-4 py-5 text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter">${type || 'N/A'}</td>
                     <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(vpe || 'N/A').toLowerCase()}</td>
                     <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(resp || 'N/A').toLowerCase()}</td>
-                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-right whitespace-nowrap">$${(pUSD / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-right whitespace-nowrap">$${fmt(pUSD)}M</td>
                     <td class="px-4 py-5 font-black text-indigo-400 dark:text-indigo-300 text-right whitespace-nowrap">${pFTE.toFixed(1)}</td>
-                    <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${(mUSD / 1000000).toFixed(1)}M</td>
+                    <td class="px-4 py-5 font-black text-emerald-600 dark:text-emerald-400 text-right whitespace-nowrap">$${fmt(mUSD)}M</td>
                     <td class="px-4 py-5 font-black text-emerald-400 dark:text-emerald-300 text-right whitespace-nowrap">${mFTE.toFixed(1)}</td>
                     <td class="px-4 py-5 text-center"><div class="flex flex-col items-center"><span class="text-[10px] font-black text-slate-600 dark:text-slate-300">${avance}%</span><div class="w-12 h-1 bg-slate-100 dark:bg-slate-800 rounded-full mt-1 overflow-hidden"><div class="h-full bg-indigo-500" style="width: ${Math.min(parseFloat(avance), 100)}%"></div></div></div></td>
                     <td class="px-4 py-5 text-center"><button onclick="openHitosModal('${cod || ""}', '${String(name || "").replace(/'/g, "")}')" class="p-2 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-full transition-all" title="Ver Hitos">🚩</button></td>
@@ -1045,13 +1045,13 @@
                 const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
                 const cod = String(r[0]).trim();
                 const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
-                for(let i=0;i<12;i++) {
+                for (let i = 0; i < 12; i++) {
                     const seg = document.createElement('div'); seg.className = "line-segment";
-                    const exp = parseFloat(r[33+i])||0, mat = parseFloat(r[67+i])||0;
-                    const w = exp > 0 ? (mat/exp)*100 : (mat>0?100:0);
-                    const dispE = exp > 0 ? (exp/1e6).toFixed(1)+'M' : '';
-                    const dispM = mat > 0 ? (mat/1e6).toFixed(1)+'M' : '';
-                    seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>`:''}<div class="gantt-line-expected ${exp===0?'hidden':''}"></div><div class="gantt-line-materialized ${mat===0?'shaded':''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>`:''}`;
+                    const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
+                    const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
+                    const dispE = exp > 0 ? fmt(exp) + 'M' : '';
+                    const dispM = mat > 0 ? fmt(mat) + 'M' : '';
+                    seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
                     initiativeMilestones.forEach(m => {
                         const mDate = m[3] ? new Date(m[3]) : null;
                         if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
@@ -1088,10 +1088,10 @@
             initQChartInstance = new Chart(ctxQ, {
                 type: 'bar',
                 data: {
-                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Total'],
                     datasets: [
-                        { label: 'Esperado', data: [q1E, q2E, q3E, q4E].map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
-                        { label: 'Materializado', data: [q1M, q2M, q3M, q4M].map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
+                        { label: 'Esperado', data: [q1E, q2E, q3E, q4E, q1E + q2E + q3E + q4E].map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
+                        { label: 'Materializado', data: [q1M, q2M, q3M, q4M, q1M + q2M + q3M + q4M].map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
                     ]
                 },
                 options: {

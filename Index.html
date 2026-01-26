@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <base target="_top">
     <title>EVA - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap"
         rel="stylesheet">
     <script>
@@ -31,83 +33,103 @@
             transition: background-color 0.3s, color 0.3s;
             overflow-x: hidden;
         }
+
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: transparent;
         }
+
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 4px;
         }
+
         .dark ::-webkit-scrollbar-thumb {
             background: #475569;
         }
+
         .dark {
             background-color: #020617;
             color: #f1f5f9;
         }
+
         /* High-Contrast Dark Mode Overrides */
         .dark .bg-white {
             background-color: #0f172a !important;
         }
+
         .dark .border-slate-200,
         .dark .border-slate-100 {
             border-color: #1e293b !important;
         }
+
         .dark h1,
         .dark h2,
         .dark h3,
         .dark h4 {
             color: #f8fafc !important;
         }
+
         .dark .text-slate-900,
         .dark .text-slate-800,
         .dark .text-slate-700,
         .dark .text-slate-500 {
             color: #f1f5f9 !important;
         }
+
         .dark .text-slate-600,
         .dark .text-slate-400 {
             color: #94a3b8 !important;
         }
+
         .dark .bg-slate-50,
         .dark .bg-slate-50/50 {
             background-color: #1e293b !important;
         }
+
         .dark .hover\:bg-slate-50\/50:hover {
             background-color: #334155 !important;
         }
+
         .dark th {
             background-color: #1e293b;
             color: #cbd5e1 !important;
         }
+
         .dark td {
             color: #cbd5e1 !important;
             border-top: 1px solid #1e293b !important;
         }
+
         .dark .nav-btn {
             color: #f8fafc !important;
         }
+
         .dark .nav-btn:hover {
             background-color: #1e293b !important;
         }
+
         .dark .nav-btn.bg-indigo-50 {
             background-color: #312e81 !important;
             color: #e0e7ff !important;
         }
+
         .dark .filter-chip {
             border-color: #334155;
             color: #94a3b8;
         }
+
         .dark input,
         .dark textarea {
             background-color: #1e293b !important;
             color: white !important;
             border-color: #334155 !important;
         }
+
         /* Light Mode Specific Contrast Fixes - TOTAL BLACK */
         body:not(.dark) h1,
         body:not(.dark) h2,
@@ -128,32 +150,40 @@
             /* Total Black for extreme readability */
             opacity: 1 !important;
         }
+
         /* Force white on dark headers even in light mode */
         body:not(.dark) tr.bg-indigo-900 th,
         body:not(.dark) .bg-indigo-900 th {
             color: #ffffff !important;
         }
+
         /* Chart background color adjustment */
         body:not(.dark) .bg-white,
         body:not(.dark) canvas {
             background-color: #ffffff !important;
         }
+
         /* High Contrast Theme Tokens */
         .dark .bg-white {
             background-color: #0f172a !important;
         }
+
         .dark .border-slate-200 {
             border-color: #1e293b !important;
         }
+
         .dark .text-slate-400 {
             color: #64748b !important;
         }
+
         body:not(.dark) .bg-slate-50\/50 {
             background-color: #f8fafc !important;
         }
+
         body:not(.dark) .border-slate-100 {
             border-color: #e2e8f0 !important;
         }
+
         /* Gantt Milestone Flag - Restored to Rows */
         .gantt-flag {
             position: absolute;
@@ -167,21 +197,27 @@
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
             line-height: 1;
         }
+
         .gantt-flag:hover {
             transform: translateX(-50%) scale(1.3);
         }
+
         @keyframes bounce-subtle {
+
             0%,
             100% {
                 transform: translateY(0);
             }
+
             50% {
                 transform: translateY(-4px);
             }
         }
+
         .animate-bounce-subtle {
             animation: bounce-subtle 4s ease-in-out infinite;
         }
+
         /* Gantt Visualization Styles */
         .gantt-row {
             display: flex;
@@ -190,9 +226,11 @@
             padding: 1.5rem 0;
             border-bottom: 1px solid #f1f5f9;
         }
+
         .dark .gantt-row {
             border-color: #1e293b;
         }
+
         .gantt-lines-container {
             flex: 1;
             position: relative;
@@ -201,6 +239,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 12px;
         }
+
         .gantt-line-expected {
             position: absolute;
             top: 20px;
@@ -211,6 +250,7 @@
             z-index: 1;
             width: 100%;
         }
+
         .gantt-line-materialized {
             position: absolute;
             top: 40px;
@@ -221,6 +261,7 @@
             z-index: 2;
             transition: width 0.3s ease;
         }
+
         .gantt-value-top {
             position: absolute;
             top: -12px;
@@ -230,6 +271,7 @@
             font-weight: 800;
             color: #6366f1;
         }
+
         .gantt-value-bottom {
             position: absolute;
             top: 50px;
@@ -239,20 +281,25 @@
             font-weight: 800;
             color: #10b981;
         }
+
         .line-segment {
             position: relative;
             height: 100%;
         }
+
         .shaded {
             opacity: 0.2;
         }
+
         #loading-overlay {
             background: #ffffff;
             backdrop-filter: blur(8px);
         }
+
         .dark #loading-overlay {
             background: #020617;
         }
+
         /* Toast Notification Styles */
         #toast {
             visibility: hidden;
@@ -275,32 +322,97 @@
             white-space: pre-wrap;
             /* Support multi-line hito lists */
         }
+
         #toast.show {
             visibility: visible;
             animation: fadein 0.5s, fadeout 0.5s 2.5s;
         }
+
         @keyframes fadein {
             from {
                 bottom: 0;
                 opacity: 0;
             }
+
             to {
                 bottom: 30px;
                 opacity: 1;
             }
         }
+
         @keyframes fadeout {
             from {
                 bottom: 30px;
                 opacity: 1;
             }
+
             to {
                 bottom: 0;
                 opacity: 0;
             }
         }
+
+        /* Initiative Detail Popover */
+        .init-popover {
+            position: absolute;
+            z-index: 100;
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            width: 320px;
+            border: 1px solid #e2e8f0;
+            display: none;
+            pointer-events: auto;
+        }
+
+        .dark .init-popover {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+
+        .popover-arrow {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: inherit;
+            border: inherit;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
+            bottom: -6px;
+            left: 50%;
+            margin-left: -6px;
+        }
+
+        .vpe-gantt-group {
+            margin-top: 2rem;
+            border-top: 2px solid #818cf8;
+            padding-top: 1rem;
+        }
+
+        .vpe-gantt-vpe-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.5rem;
+            background: #f1f5f9;
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            font-weight: 900;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .dark .vpe-gantt-vpe-header {
+            background: #1e293b;
+            color: #f1f5f9;
+        }
     </style>
 </head>
+
 <body class="bg-slate-50 text-slate-900 min-h-screen dark">
     <div id="loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
         <div class="flex flex-col items-center">
@@ -366,19 +478,23 @@
                 <!-- View: EXECUTIVE SUMMARY (VPE) -->
                 <section id="view-vpe" class="view space-y-8">
                     <!-- Top KPI Card -->
+                    <!-- Top KPI Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Full Row: Global Filters -->
                         <div
-                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
-                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Cierre
-                                Proyectado PyG</h4>
-                            <span id="pyg-total" class="text-4xl font-black text-indigo-600 tracking-tighter">$0M</span>
-                        </div>
-                        <div
-                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5 col-span-1 md:col-span-3 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5 col-span-1 md:col-span-3 flex flex-col gap-8">
                             <div class="space-y-4 flex-1">
                                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Filtros Globales
                                 </h4>
                                 <div id="vpe-category-filters" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div class="space-y-4 flex-1">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">VPE</h4>
+                                <div id="vpe-vpe-filters" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div class="space-y-4 flex-1">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Frente</h4>
+                                <div id="vpe-frente-filters" class="flex flex-wrap gap-2"></div>
                             </div>
                             <div id="exec-toggle-container" class="hidden shrink-0">
                                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Vista de
@@ -393,6 +509,8 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 3-Column Row: KPI Cards -->
                         <div
                             class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
                             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total
@@ -407,6 +525,12 @@
                             <span id="mat-total-exec"
                                 class="text-4xl font-black text-emerald-500 tracking-tighter">$0M</span>
                         </div>
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-indigo-500/5">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Materializado
+                                PYG</h4>
+                            <span id="pyg-total" class="text-4xl font-black text-indigo-600 tracking-tighter">$0M</span>
+                        </div>
                     </div>
                     <!-- Charts Grid -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -415,7 +539,7 @@
                             <h3
                                 class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500 dark:text-slate-400">
                                 Eficiencia
-                                Mensual Esperada ($M)</h3>
+                                por Qs Esperada ($M)</h3>
                             <div class="flex-1 relative">
                                 <canvas id="vpe-quarter-chart"></canvas>
                             </div>
@@ -460,6 +584,36 @@
                                 </thead>
                                 <tbody id="vpe-table-body"></tbody>
                             </table>
+                        </div>
+                    </div>
+                    <!-- VPE Gantt Section -->
+                    <div
+                        class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl mt-8 relative">
+                        <div class="flex justify-between items-center mb-10">
+                            <div>
+                                <h3 class="text-xl font-black uppercase tracking-tight">Cronograma por VPE e Iniciativa
+                                </h3>
+                                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1 italic">
+                                    Haz clic en el nombre de la iniciativa para ver detalles</p>
+                            </div>
+                            <button onclick="openVpePdfModal()"
+                                class="px-6 py-2.5 bg-rose-600 text-white text-xs font-black rounded-xl shadow-lg hover:bg-rose-700 transition-all uppercase tracking-widest flex items-center gap-2">
+                                <span>📄</span> Resumen PDF
+                            </button>
+                        </div>
+                        <div id="vpe-gantt-container" class="space-y-4"></div>
+                        <!-- Initiative Detail Popover -->
+                        <div id="init-detail-popover" class="init-popover">
+                            <div class="popover-arrow"></div>
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 id="pop-init-name" class="text-sm font-black leading-tight"></h4>
+                                <button onclick="document.getElementById('init-detail-popover').style.display='none'"
+                                    class="text-slate-400 hover:text-rose-500 font-black px-2">✕</button>
+                            </div>
+                            <div class="space-y-3 relative pl-4 border-l-2 border-slate-100 dark:border-slate-800">
+                                <p class="text-[8px] font-black uppercase text-slate-400 mb-2">Próximos Hitos</p>
+                                <div id="pop-init-hitos" class="space-y-3 max-h-40 overflow-y-auto pr-2"></div>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -513,6 +667,11 @@
                                 class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">VPE</label>
                             <div id="vpe-filters" class="flex flex-wrap gap-2"></div>
                         </div>
+                        <div>
+                            <label
+                                class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Frente</label>
+                            <div id="frente-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div id="category-filter-section" class="flex-1">
                                 <label
@@ -540,7 +699,7 @@
                         <div
                             class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col h-[400px]">
                             <h3 class="text-sm font-black mb-6 uppercase tracking-widest text-slate-500">Eficiencia
-                                Esperada vs Mat ($M) - Filtrado</h3>
+                                por Qs Esperada ($M) - Filtrado</h3>
                             <div class="flex-1 relative">
                                 <canvas id="init-quarter-chart"></canvas>
                             </div>
@@ -608,22 +767,29 @@
                         <div class="flex justify-between items-start mb-10">
                             <h3 class="text-xl font-black uppercase tracking-tight">Cronograma de Ejecución Mensual
                                 ($M)</h3>
-                            <div
-                                class="flex items-center gap-6 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 rounded-full bg-indigo-400"></div>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Esperado</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Materializado</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm">🚩</span>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-widest text-slate-500">Hitos</span>
+                            <div class="flex items-center gap-4">
+                                <select id="gantt-init-filter"
+                                    onchange="appData.ganttFilter = this.value; buildInitiativesView();"
+                                    class="bg-slate-50 dark:bg-slate-800 border-none rounded-xl px-4 py-2 text-xs font-black text-indigo-600 outline-none focus:ring-2 ring-indigo-500 transition-all max-w-[200px]">
+                                    <option value="all">TODAS LAS INICIATIVAS</option>
+                                </select>
+                                <div
+                                    class="flex items-center gap-6 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-indigo-400"></div>
+                                        <span
+                                            class="text-[10px] font-black uppercase tracking-widest text-slate-500">Esperado</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+                                        <span
+                                            class="text-[10px] font-black uppercase tracking-widest text-slate-500">Materializado</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm">🚩</span>
+                                        <span
+                                            class="text-[10px] font-black uppercase tracking-widest text-slate-500">Hitos</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -633,6 +799,31 @@
             </div>
         </main>
     </div>
+    <!-- PDF Selection Modal -->
+    <div id="pdf-modal" onclick="if(event.target === this) document.getElementById('pdf-modal').classList.add('hidden')"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-fade-in pointer-events-auto">
+            <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                <div>
+                    <h3 class="text-xl font-black uppercase tracking-tight">Exportar Resumen PDF</h3>
+                    <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Selecciona las VPEs
+                        que deseas incluir en el reporte</p>
+                </div>
+                <button onclick="document.getElementById('pdf-modal').classList.add('hidden')"
+                    class="h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-400 font-bold">✕</button>
+            </div>
+            <div id="vpe-selection-list" class="p-8 grid grid-cols-2 gap-4 max-h-[400px] overflow-y-auto"></div>
+            <div class="p-8 bg-slate-50 dark:bg-slate-900/50 flex justify-end gap-4">
+                <button onclick="document.getElementById('pdf-modal').classList.add('hidden')"
+                    class="px-8 py-3 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-700">Cancelar</button>
+                <button onclick="generatePDF()"
+                    class="px-8 py-3 bg-indigo-600 text-white text-xs font-black rounded-2xl shadow-lg hover:bg-indigo-700 transition-all uppercase tracking-widest">Generar
+                    Reporte</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Milestones Modal -->
     <div id="hitos-modal" onclick="if(event.target === this) closeHitosModal()"
         class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md cursor-pointer">
@@ -679,8 +870,8 @@
     <script>
         let appData = {
             user: {}, baseData: [], goals: [], milestones: [],
-            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(),
-            execViewToggle: 'all' // 'all' or 'team'
+            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(), frenteFilters: new Set(),
+            execViewToggle: 'all', ganttFilter: 'all'
         };
         const fmt = (v) => {
             const val = parseFloat(v) || 0;
@@ -843,9 +1034,16 @@
                     return rowCat.includes(l) || l.includes(rowCat);
                 });
                 if (!passCat) return false;
+
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
                 if (!passVpe) return false;
+
+                const fIdx = findIdx(['frente'], 12);
+                const rowFrente = row[fIdx] ? String(row[fIdx]).trim() : '';
+                const passFrente = appData.frenteFilters.size === 0 || appData.frenteFilters.has(rowFrente);
+                if (!passFrente) return false;
+
                 return true;
             });
             filteredBase.forEach(row => {
@@ -893,6 +1091,34 @@
                     catBox.appendChild(b);
                 });
             }
+
+            // Sync with other filters
+            const buildVPEChips = (containerId, sourceSet, activeSet) => {
+                const box = document.getElementById(containerId);
+                if (!box) return;
+                box.innerHTML = '';
+                Array.from(sourceSet).sort().forEach(v => {
+                    const b = document.createElement('button');
+                    const isActive = activeSet.has(v);
+                    b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
+                    b.innerText = v;
+                    b.onclick = () => { if (activeSet.has(v)) activeSet.delete(v); else activeSet.add(v); buildVPEView(); buildInitiativesView(); };
+                    box.appendChild(b);
+                });
+            };
+
+            const allVpes = new Set();
+            const frentes = new Set();
+            const fIdx = findIdx(['frente'], 12);
+            appData.baseData.forEach(r => {
+                if (r[vpeIdx]) allVpes.add(String(r[vpeIdx]).trim());
+                if (r[fIdx]) frentes.add(String(r[fIdx]).trim());
+            });
+
+            buildVPEChips('vpe-frente-filters', frentes, appData.frenteFilters);
+            buildVPEChips('vpe-vpe-filters', allVpes, appData.vpeFilters);
+
+            renderVPEGantt(filteredBase);
         }
         function renderVPECharts(labels, pots, qExpected, qMaterialized) {
             const ctxQ = document.getElementById('vpe-quarter-chart').getContext('2d');
@@ -947,6 +1173,12 @@
             };
             buildChips('responsable-filters', resps, appData.respFilters);
             buildChips('vpe-filters', vpes, appData.vpeFilters);
+
+            const frentes = new Set();
+            const fIdx = findIdx(['frente'], 12);
+            appData.baseData.forEach(row => { if (row && row[fIdx]) frentes.add(String(row[fIdx]).trim()); });
+            buildChips('frente-filters', frentes, appData.frenteFilters);
+
             const vpeP = document.getElementById('vpe-filter-parent');
             if (vpeP) vpeP.className = appData.user.perfil == 1 ? "block" : "hidden";
             const tbody = document.getElementById('initiatives-table-body');
@@ -978,7 +1210,9 @@
                     const l = f.toLowerCase();
                     return rowCat.includes(l) || l.includes(rowCat);
                 });
-                return passVpe && passResp && passCat;
+                const rowFrente = row[fIdx] ? String(row[fIdx]).trim() : '';
+                const passFrente = appData.frenteFilters.size === 0 || appData.frenteFilters.has(rowFrente);
+                return passVpe && passResp && passCat && passFrente;
             });
             filtered.forEach(r => {
                 const p = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
@@ -1033,15 +1267,37 @@
         }
         function renderGantt(data) {
             const container = document.getElementById('gantt-container'); container.innerHTML = '';
+            const dropdown = document.getElementById('gantt-init-filter');
+
+            // Populate dropdown with CURRENT data (global filters already applied)
+            const currentVal = appData.ganttFilter;
+            dropdown.innerHTML = '<option value="all">VER TODAS LAS INICIATIVAS</option>';
+            const uniqueInits = [...new Set(data.map(r => String(r[1]).trim()))].sort();
+            uniqueInits.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name; opt.innerText = name;
+                dropdown.appendChild(opt);
+            });
+            dropdown.value = currentVal;
+            if (dropdown.selectedIndex === -1) { dropdown.value = 'all'; appData.ganttFilter = 'all'; }
+
+            // Secondary Filter for Gantt ONLY
+            const displayData = appData.ganttFilter === 'all' ? data : data.filter(r => String(r[1]).trim() === appData.ganttFilter);
+
             const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             const gHeader = document.createElement('div'); gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
             let monthLabels = '';
             months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[10px] uppercase tracking-widest">${m}</div>`; });
-            gHeader.innerHTML = `<div class="w-48 shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
+            gHeader.innerHTML = `<div class="w-[450px] shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
             container.appendChild(gHeader);
-            data.forEach(r => {
-                const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl";
-                const label = document.createElement('div'); label.className = "w-48 text-xs font-bold truncate text-slate-900 dark:text-white"; label.innerText = r[1]; label.title = r[1];
+
+            displayData.forEach(r => {
+                const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
+                const cat = r[6] || '';
+                const label = document.createElement('div');
+                label.className = "w-[450px] shrink-0 text-xs font-bold text-slate-900 dark:text-white pr-4";
+                label.innerHTML = `${r[1]} <span class="bg-indigo-50 dark:bg-indigo-900/10 px-2 py-0.5 rounded-full text-[9px] text-slate-400 font-bold ml-2 whitespace-nowrap">${cat}</span>`;
+                label.title = r[1];
                 const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
                 const cod = String(r[0]).trim();
                 const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
@@ -1049,8 +1305,8 @@
                     const seg = document.createElement('div'); seg.className = "line-segment";
                     const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
                     const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
-                    const dispE = exp > 0 ? fmt(exp) + 'M' : '';
-                    const dispM = mat > 0 ? fmt(mat) + 'M' : '';
+                    const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
+                    const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
                     seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
                     initiativeMilestones.forEach(m => {
                         const mDate = m[3] ? new Date(m[3]) : null;
@@ -1063,6 +1319,164 @@
                 }
                 row.appendChild(label); row.appendChild(lineContainer); container.appendChild(row);
             });
+        }
+        function renderVPEGantt(data) {
+            const container = document.getElementById('vpe-gantt-container');
+            container.innerHTML = '';
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+            // Group by VPE
+            const vpeIdx = findIdx(['vpe'], 3);
+            const potIdx = findIdx(['total eficiencia identificada', 'potencial ($)'], 18);
+            const matIdx = findIdx(['materializado ($)'], 80);
+
+            const groups = {};
+            data.forEach(r => {
+                const vpe = r[vpeIdx] ? String(r[vpeIdx]).trim() : 'Sin VPE';
+                if (!groups[vpe]) groups[vpe] = { name: vpe, inits: [], totalExp: 0, totalMat: 0 };
+                const p = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                const m = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                groups[vpe].totalExp += p; groups[vpe].totalMat += m;
+                groups[vpe].inits.push(r);
+            });
+
+            Object.values(groups).sort((a, b) => b.totalExp - a.totalExp).forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = "vpe-gantt-group";
+
+                const header = document.createElement('div');
+                header.className = "vpe-gantt-vpe-header";
+                header.innerHTML = `
+                    <span>${group.name}</span>
+                    <div class="flex items-center gap-8">
+                        <div class="flex gap-4 opacity-50 text-[9px]">
+                            <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-indigo-400"></div> POT</div>
+                            <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-emerald-400"></div> MAT</div>
+                            <div class="flex items-center gap-1.5"><span>🚩</span> HITOS</div>
+                        </div>
+                        <div class="flex gap-4 border-l border-slate-200 dark:border-slate-700 pl-8">
+                            <span>POT: $${fmt(group.totalExp)}M</span>
+                            <span>MAT: $${fmt(group.totalMat)}M</span>
+                        </div>
+                    </div>
+                `;
+                groupDiv.appendChild(header);
+
+                const gHeader = document.createElement('div'); gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-500 font-bold opacity-50";
+                let monthLabels = '';
+                months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[8px] uppercase tracking-widest">${m}</div>`; });
+                gHeader.innerHTML = `<div class="w-[450px] shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
+                groupDiv.appendChild(gHeader);
+
+                const monthlyTotals = Array.from({ length: 12 }, () => ({ exp: 0, mat: 0 }));
+
+                group.inits.forEach(r => {
+                    const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
+                    const cat = r[6] || '';
+                    const pUSD = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                    const mUSD = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+
+                    const label = document.createElement('div');
+                    label.className = "w-[450px] shrink-0 text-xs font-bold text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 pr-4";
+                    label.innerHTML = `
+                        <div class="flex flex-col">
+                            <div class="flex items-baseline gap-2">
+                                <span>${r[1]}</span>
+                                <span class="bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full text-[8px] text-slate-400 font-black whitespace-nowrap uppercase">${cat}</span>
+                            </div>
+                            <div class="flex gap-3 mt-1 text-[9px] font-black tracking-tight uppercase">
+                                <span class="text-indigo-400">POT: $${fmt(pUSD)}M</span>
+                                <span class="text-emerald-500">MAT: $${fmt(mUSD)}M</span>
+                            </div>
+                        </div>
+                    `;
+                    label.title = r[1];
+                    label.onclick = (e) => showInitiativeDetail(e, r);
+
+                    const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
+                    const cod = String(r[0]).trim();
+                    const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
+
+                    for (let i = 0; i < 12; i++) {
+                        const seg = document.createElement('div'); seg.className = "line-segment";
+                        const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
+                        monthlyTotals[i].exp += exp; monthlyTotals[i].mat += mat;
+
+                        const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
+                        const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
+                        const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
+                        seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
+                        initiativeMilestones.forEach(m => {
+                            const mDate = m[3] ? new Date(m[3]) : null;
+                            if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
+                                const flag = document.createElement('div'); flag.className = "gantt-flag animate-bounce-subtle"; flag.innerHTML = "🚩"; flag.onclick = (e) => { e.stopPropagation(); openHitosModal(cod, r[1]); };
+                                seg.appendChild(flag);
+                            }
+                        });
+                        lineContainer.appendChild(seg);
+                    }
+                    row.appendChild(label); row.appendChild(lineContainer); groupDiv.appendChild(row);
+                });
+
+                // Add Monthly Totals Summary Row
+                const totalRow = document.createElement('div');
+                totalRow.className = "flex items-center gap-4 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-indigo-900/10 rounded-b-3xl mt-2";
+                const totalLabel = document.createElement('div');
+                totalLabel.className = "w-[450px] shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2";
+                totalLabel.innerText = `RESUMEN MENSUAL ${group.name}`;
+
+                const totalContainer = document.createElement('div');
+                totalContainer.className = "flex-1 grid grid-cols-12 gap-2";
+                monthlyTotals.forEach(m => {
+                    const col = document.createElement('div');
+                    col.className = "text-center flex flex-col justify-center min-h-[40px]";
+                    const eM = (m.exp / 1e6).toFixed(1);
+                    const mM = (m.mat / 1e6).toFixed(1);
+                    col.innerHTML = `
+                        <div class="text-[9px] font-black text-indigo-400/80 leading-none">${m.exp > 0 ? '$' + eM + 'M' : '-'}</div>
+                        <div class="text-[9px] font-black text-emerald-500/80 mt-1 leading-none">${m.mat > 0 ? '$' + mM + 'M' : '-'}</div>
+                    `;
+                    totalContainer.appendChild(col);
+                });
+                totalRow.appendChild(totalLabel); totalRow.appendChild(totalContainer);
+                groupDiv.appendChild(totalRow);
+                container.appendChild(groupDiv);
+            });
+        }
+
+        function showInitiativeDetail(e, r) {
+            e.stopPropagation();
+            const pop = document.getElementById('init-detail-popover');
+            const rect = e.target.getBoundingClientRect();
+            const containerRect = document.getElementById('views-container').getBoundingClientRect();
+
+            // Position above the clicked element
+            pop.style.display = 'block';
+            // Use page coordinates to avoid scroll-related misalignment, 
+            // but compensate for the offset parent since popover is absolute
+            const scrollContainer = document.getElementById('views-container');
+            const parentRect = pop.offsetParent.getBoundingClientRect();
+
+            pop.style.left = `${rect.left - parentRect.left}px`;
+            pop.style.top = `${rect.top - parentRect.top - pop.offsetHeight - 5}px`;
+
+            document.getElementById('pop-init-name').innerText = r[1];
+            // No longer updating POT/MAT in popover as requested
+
+            const hitosList = document.getElementById('pop-init-hitos');
+            hitosList.innerHTML = '';
+            const cod = String(r[0]).trim();
+            const milestones = appData.milestones.filter(m => String(m[1]).trim() === cod).slice(0, 3);
+            if (milestones.length === 0) {
+                hitosList.innerHTML = '<p class="text-[10px] text-slate-400 italic">No hay hitos registrados</p>';
+            } else {
+                milestones.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = "text-[10px]";
+                    div.innerHTML = `<span class="font-black text-indigo-500 block">${m[3]}</span><span class="text-slate-500">${m[2]}</span>`;
+                    hitosList.appendChild(div);
+                });
+            }
         }
         function renderInitCharts(filtered) {
             let q1E = 0, q2E = 0, q3E = 0, q4E = 0, q1M = 0, q2M = 0, q3M = 0, q4M = 0;
@@ -1133,7 +1547,67 @@
             document.getElementById('hitos-modal').classList.remove('hidden');
         }
         function closeHitosModal() { document.getElementById('hitos-modal').classList.add('hidden'); }
+
+        function openVpePdfModal() {
+            const list = document.getElementById('vpe-selection-list');
+            list.innerHTML = '';
+            const allVpes = new Set();
+            appData.baseData.forEach(r => { if (r[3]) allVpes.add(String(r[3]).trim()); });
+            Array.from(allVpes).sort().forEach(vpe => {
+                const div = document.createElement('label');
+                div.className = "flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all group";
+                div.innerHTML = `
+                    <input type="checkbox" value="${vpe}" class="w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                    <span class="text-sm font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-all">${vpe}</span>
+                `;
+                list.appendChild(div);
+            });
+            document.getElementById('pdf-modal').classList.remove('hidden');
+        }
+
+        function generatePDF() {
+            const selected = Array.from(document.querySelectorAll('#vpe-selection-list input:checked')).map(i => i.value);
+            if (selected.length === 0) return showToast('Selecciona al menos una VPE');
+
+            showToast('Generando PDF...');
+            const temp = document.createElement('div');
+            temp.style.width = '1400px';
+            temp.style.padding = '40px';
+            temp.className = document.body.classList.contains('dark') ? 'dark bg-slate-950 text-white' : 'bg-white text-slate-900';
+
+            const title = document.createElement('h1');
+            title.className = "text-2xl font-black uppercase mb-10 text-center tracking-tighter";
+            title.innerText = "Resumen Cronograma de Iniciativas";
+            temp.appendChild(title);
+
+            const ganttContent = document.getElementById('vpe-gantt-container').cloneNode(true);
+            // Filter the cloned content to only selected VPEs
+            const groups = temp.appendChild(ganttContent).querySelectorAll('.vpe-gantt-group');
+            let hasContent = false;
+            groups.forEach(g => {
+                const head = g.querySelector('.vpe-gantt-vpe-header');
+                const vpeName = head.querySelector('span:first-child').innerText;
+                if (!selected.includes(vpeName)) g.remove();
+                else hasContent = true;
+            });
+
+            if (!hasContent) return showToast('Error al procesar los datos');
+
+            const opt = {
+                margin: 10,
+                filename: `Resumen_EVA_${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, backgroundColor: document.body.classList.contains('dark') ? '#020617' : '#ffffff' },
+                jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' }
+            };
+
+            html2pdf().from(temp).set(opt).save().then(() => {
+                document.getElementById('pdf-modal').classList.add('hidden');
+                showToast('PDF generado correctamente');
+            });
+        }
         function toggleDarkMode() { document.body.classList.toggle('dark'); buildVPEView(); buildInitiativesView(); }
     </script>
 </body>
+
 </html>

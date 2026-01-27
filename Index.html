@@ -1285,10 +1285,25 @@
             const displayData = appData.ganttFilter === 'all' ? data : data.filter(r => String(r[1]).trim() === appData.ganttFilter);
 
             const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-            const gHeader = document.createElement('div'); gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-900 dark:text-slate-100 font-black";
+            const gHeader = document.createElement('div'); gHeader.className = "flex flex-col gap-1 px-6 mb-4";
+
+            let qLabels = '<div class="flex-1 grid grid-cols-4 gap-2 text-[12px] font-black text-slate-400 uppercase tracking-widest text-center px-2">';
+            ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => { qLabels += `<div class="border-b-2 border-slate-100 dark:border-slate-800 pb-1">${q}</div>`; });
+            qLabels += '</div>';
+
             let monthLabels = '';
-            months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[10px] uppercase tracking-widest">${m}</div>`; });
-            gHeader.innerHTML = `<div class="w-[450px] shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
+            months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[12px] uppercase tracking-widest text-slate-900 dark:text-slate-100 font-black">${m}</div>`; });
+
+            gHeader.innerHTML = `
+                <div class="flex items-center gap-4">
+                    <div class="w-[450px] shrink-0"></div>
+                    ${qLabels}
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="w-[450px] shrink-0"></div>
+                    <div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>
+                </div>
+            `;
             container.appendChild(gHeader);
 
             displayData.forEach(r => {
@@ -1362,86 +1377,161 @@
                 `;
                 groupDiv.appendChild(header);
 
-                const gHeader = document.createElement('div'); gHeader.className = "flex items-center gap-4 px-6 mb-4 text-slate-500 font-bold opacity-50";
+                const gHeader = document.createElement('div'); gHeader.className = "flex flex-col gap-1 px-6 mb-4";
+
+                let qLabels = '<div class="flex-1 grid grid-cols-4 gap-2 text-[12px] font-black text-slate-400 uppercase tracking-widest text-center px-1">';
+                ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => { qLabels += `<div class="border-b border-slate-100 dark:border-slate-800 pb-1">${q}</div>`; });
+                qLabels += '</div>';
+
                 let monthLabels = '';
-                months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[8px] uppercase tracking-widest">${m}</div>`; });
-                gHeader.innerHTML = `<div class="w-[450px] shrink-0"></div><div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>`;
+                months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[12px] uppercase tracking-widest text-slate-900 dark:text-slate-100 font-black">${m}</div>`; });
+
+                gHeader.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-[450px] shrink-0"></div>
+                        ${qLabels}
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="w-[450px] shrink-0"></div>
+                        <div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>
+                    </div>
+                `;
                 groupDiv.appendChild(gHeader);
 
-                const monthlyTotals = Array.from({ length: 12 }, () => ({ exp: 0, mat: 0 }));
+                const monthlyTotalsGroup = Array.from({ length: 12 }, () => ({ exp: 0, mat: 0 }));
+                const vpIdx = 4; // Col E
 
-                group.inits.forEach(r => {
-                    const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
-                    const cat = r[6] || '';
-                    const pUSD = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
-                    const mUSD = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                // Optimization: Pre-sort or partition if VPE is Tecnología
+                const cleanVpeName = group.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                if (cleanVpeName.includes('TECNOLOGIA')) {
+                    const subGroupsMap = {};
+                    group.inits.forEach(r => {
+                        const vpLine = r[vpIdx] ? String(r[vpIdx]).trim() : 'Otros';
+                        if (!subGroupsMap[vpLine]) subGroupsMap[vpLine] = { inits: [], pot: 0, mat: 0, monthly: Array.from({ length: 12 }, () => ({ exp: 0, mat: 0 })) };
+                        const p = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                        const m = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                        subGroupsMap[vpLine].pot += p; subGroupsMap[vpLine].mat += m;
+                        subGroupsMap[vpLine].inits.push(r);
+                    });
 
-                    const label = document.createElement('div');
-                    label.className = "w-[450px] shrink-0 text-xs font-bold text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 pr-4";
-                    label.innerHTML = `
-                        <div class="flex flex-col">
-                            <div class="flex items-baseline gap-2">
-                                <span>${r[1]}</span>
-                                <span class="bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full text-[8px] text-slate-400 font-black whitespace-nowrap uppercase">${cat}</span>
+                    Object.keys(subGroupsMap).sort().forEach(vp => {
+                        const sg = subGroupsMap[vp];
+
+                        // Sub-header
+                        const sh = document.createElement('div');
+                        sh.className = "px-6 py-2 mt-8 mb-2 bg-indigo-50/30 dark:bg-indigo-900/10 rounded-xl flex justify-between items-center border-l-4 border-indigo-600 ml-4 shadow-sm";
+                        sh.innerHTML = `
+                            <span class="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">${vp}</span>
+                            <div class="flex gap-4 text-[9px] font-black uppercase tracking-tight">
+                                <span class="bg-indigo-600 text-white px-3 py-0.5 rounded-full">POT: $${fmt(sg.pot)}M</span>
+                                <span class="bg-emerald-600 text-white px-3 py-0.5 rounded-full">MAT: $${fmt(sg.mat)}M</span>
                             </div>
-                            <div class="flex gap-3 mt-1 text-[9px] font-black tracking-tight uppercase">
-                                <span class="text-indigo-400">POT: $${fmt(pUSD)}M</span>
-                                <span class="text-emerald-500">MAT: $${fmt(mUSD)}M</span>
-                            </div>
-                        </div>
-                    `;
-                    label.title = r[1];
-                    label.onclick = (e) => showInitiativeDetail(e, r);
+                        `;
+                        groupDiv.appendChild(sh);
 
-                    const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
-                    const cod = String(r[0]).trim();
-                    const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
-
-                    for (let i = 0; i < 12; i++) {
-                        const seg = document.createElement('div'); seg.className = "line-segment";
-                        const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
-                        monthlyTotals[i].exp += exp; monthlyTotals[i].mat += mat;
-
-                        const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
-                        const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
-                        const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
-                        seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
-                        initiativeMilestones.forEach(m => {
-                            const mDate = m[3] ? new Date(m[3]) : null;
-                            if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
-                                const flag = document.createElement('div'); flag.className = "gantt-flag animate-bounce-subtle"; flag.innerHTML = "🚩"; flag.onclick = (e) => { e.stopPropagation(); openHitosModal(cod, r[1]); };
-                                seg.appendChild(flag);
+                        // Initiatives in sub-group
+                        sg.inits.forEach(r => {
+                            const row = renderGanttRow(r, potIdx, matIdx);
+                            // Accumulate for sub-group AND global group
+                            for (let i = 0; i < 12; i++) {
+                                const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
+                                sg.monthly[i].exp += exp; sg.monthly[i].mat += mat;
+                                monthlyTotalsGroup[i].exp += exp; monthlyTotalsGroup[i].mat += mat;
                             }
+                            groupDiv.appendChild(row);
                         });
-                        lineContainer.appendChild(seg);
-                    }
-                    row.appendChild(label); row.appendChild(lineContainer); groupDiv.appendChild(row);
-                });
 
-                // Add Monthly Totals Summary Row
-                const totalRow = document.createElement('div');
-                totalRow.className = "flex items-center gap-4 px-6 py-4 bg-slate-50/50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-indigo-900/10 rounded-b-3xl mt-2";
-                const totalLabel = document.createElement('div');
-                totalLabel.className = "w-[450px] shrink-0 text-[10px] font-black text-slate-400 uppercase tracking-widest pl-2";
-                totalLabel.innerText = `RESUMEN MENSUAL ${group.name}`;
+                        // Sub-total Monthly Row for this VP
+                        const subTotalRow = renderSummaryRow(`SUB-TOTAL ${vp}`, sg.monthly, "bg-indigo-50/10 dark:bg-indigo-900/5 mt-1 mb-4 border-dashed border-indigo-200 dark:border-indigo-900/30 ml-8");
+                        groupDiv.appendChild(subTotalRow);
+                    });
+                } else {
+                    group.inits.forEach(r => {
+                        const row = renderGanttRow(r, potIdx, matIdx);
+                        for (let i = 0; i < 12; i++) {
+                            const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
+                            monthlyTotalsGroup[i].exp += exp; monthlyTotalsGroup[i].mat += mat;
+                        }
+                        groupDiv.appendChild(row);
+                    });
+                }
 
-                const totalContainer = document.createElement('div');
-                totalContainer.className = "flex-1 grid grid-cols-12 gap-2";
-                monthlyTotals.forEach(m => {
-                    const col = document.createElement('div');
-                    col.className = "text-center flex flex-col justify-center min-h-[40px]";
-                    const eM = (m.exp / 1e6).toFixed(1);
-                    const mM = (m.mat / 1e6).toFixed(1);
-                    col.innerHTML = `
-                        <div class="text-[9px] font-black text-indigo-400/80 leading-none">${m.exp > 0 ? '$' + eM + 'M' : '-'}</div>
-                        <div class="text-[9px] font-black text-emerald-500/80 mt-1 leading-none">${m.mat > 0 ? '$' + mM + 'M' : '-'}</div>
-                    `;
-                    totalContainer.appendChild(col);
-                });
-                totalRow.appendChild(totalLabel); totalRow.appendChild(totalContainer);
-                groupDiv.appendChild(totalRow);
+                // Global VPE Total Summary Row
+                const finalTotalRow = renderSummaryRow(`RESUMEN TOTAL ${group.name}`, monthlyTotalsGroup, "bg-slate-100 dark:bg-slate-800/40 border-t-2 border-slate-200 dark:border-slate-700 mt-6 shadow-md rounded-b-3xl");
+                groupDiv.appendChild(finalTotalRow);
                 container.appendChild(groupDiv);
             });
+        }
+
+        function renderGanttRow(r, potIdx, matIdx) {
+            const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
+            const cat = r[6] || '';
+            const pUSD = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+            const mUSD = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+
+            const label = document.createElement('div');
+            label.className = "w-[450px] shrink-0 text-xs font-bold text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 pr-4";
+            label.innerHTML = `
+                <div class="flex flex-col">
+                    <div class="flex items-baseline gap-2">
+                        <span>${r[1]}</span>
+                        <span class="bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full text-[8px] text-slate-400 font-black whitespace-nowrap uppercase">${cat}</span>
+                    </div>
+                    <div class="flex gap-3 mt-1 text-[9px] font-black tracking-tight uppercase">
+                        <span class="text-indigo-400">POT: $${fmt(pUSD)}M</span>
+                        <span class="text-emerald-500">MAT: $${fmt(mUSD)}M</span>
+                    </div>
+                </div>
+            `;
+            label.title = r[1];
+            label.onclick = (e) => showInitiativeDetail(e, r);
+
+            const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
+            const cod = String(r[0]).trim();
+            const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
+
+            for (let i = 0; i < 12; i++) {
+                const seg = document.createElement('div'); seg.className = "line-segment";
+                const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
+                const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
+                const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
+                const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
+                seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
+                initiativeMilestones.forEach(m => {
+                    const mDate = m[3] ? new Date(m[3]) : null;
+                    if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
+                        const flag = document.createElement('div'); flag.className = "gantt-flag animate-bounce-subtle"; flag.innerHTML = "🚩"; flag.onclick = (e) => { e.stopPropagation(); openHitosModal(cod, r[1]); };
+                        seg.appendChild(flag);
+                    }
+                });
+                lineContainer.appendChild(seg);
+            }
+            row.appendChild(label); row.appendChild(lineContainer);
+            return row;
+        }
+
+        function renderSummaryRow(title, monthlyData, extraClasses = "") {
+            const row = document.createElement('div');
+            row.className = `flex items-center gap-4 px-6 py-4 rounded-2xl ${extraClasses}`;
+            const label = document.createElement('div');
+            label.className = "w-[450px] shrink-0 text-[12px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-2";
+            label.innerText = title;
+
+            const container = document.createElement('div');
+            container.className = "flex-1 grid grid-cols-12 gap-2";
+            monthlyData.forEach(m => {
+                const col = document.createElement('div');
+                col.className = "text-center flex flex-col justify-center min-h-[40px]";
+                const eM = (m.exp / 1e6).toFixed(1);
+                const mM = (m.mat / 1e6).toFixed(1);
+                col.innerHTML = `
+                    <div class="text-[12px] font-black text-indigo-500 dark:text-indigo-400 leading-none">${m.exp > 0 ? '$' + eM + 'M' : '-'}</div>
+                    <div class="text-[12px] font-black text-emerald-600 dark:text-emerald-400 mt-1.5 leading-none">${m.mat > 0 ? '$' + mM + 'M' : '-'}</div>
+                `;
+                container.appendChild(col);
+            });
+            row.appendChild(label); row.appendChild(container);
+            return row;
         }
 
         function showInitiativeDetail(e, r) {

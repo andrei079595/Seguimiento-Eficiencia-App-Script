@@ -33,8 +33,11 @@ function getInitialData() {
     const baseData = baseSheet.getDataRange().getValues();
     if (baseData.length <= 1) return { user: userProfile, baseData: [], goals: [], milestones: [], headers: [] };
     const headers = baseData[0];
-    const planAIdx = 92; // Column CO
-    const rows = baseData.slice(1).filter(row => row[planAIdx] === "Plan A");
+    const filterIdx = 92; // Column CO
+    const rows = baseData.slice(1).filter(row => {
+        const val = String(row[filterIdx] || "").trim().toUpperCase();
+        return val !== "RENUNCIA" && val !== "PLAN B";
+    });
     // Filter by Profile
     let filteredBase = rows;
     // Filter logic for initial load: 

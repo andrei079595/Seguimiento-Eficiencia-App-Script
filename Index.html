@@ -1284,6 +1284,14 @@
             // Secondary Filter for Gantt ONLY
             const displayData = appData.ganttFilter === 'all' ? data : data.filter(r => String(r[1]).trim() === appData.ganttFilter);
 
+            // Sort by Category: Gasto de Personal first, then Manos Extendidas
+            const catOrder = { "GASTO DE PERSONAL": 1, "MANOS EXTENDIDAS": 2 };
+            displayData.sort((a, b) => {
+                const cA = (a[6] || "").trim().toUpperCase();
+                const cB = (b[6] || "").trim().toUpperCase();
+                return (catOrder[cA] || 99) - (catOrder[cB] || 99);
+            });
+
             const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
             const gHeader = document.createElement('div'); gHeader.className = "flex flex-col gap-1 px-6 mb-4";
 
@@ -1292,7 +1300,10 @@
             qLabels += '</div>';
 
             let monthLabels = '';
-            months.forEach(m => { monthLabels += `<div class="flex-1 text-center text-[12px] uppercase tracking-widest text-slate-900 dark:text-slate-100 font-black">${m}</div>`; });
+            months.forEach((m, idx) => {
+                const isDivider = [2, 5, 8].includes(idx);
+                monthLabels += `<div class="flex-1 text-center text-[12px] uppercase tracking-widest text-slate-900 dark:text-slate-100 font-black ${isDivider ? 'border-r-2 border-slate-300 dark:border-slate-700' : ''}">${m}</div>`;
+            });
 
             gHeader.innerHTML = `
                 <div class="flex items-center gap-4">
@@ -1301,28 +1312,34 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="w-[450px] shrink-0"></div>
-                    <div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>
+                    <div class="flex-1 grid grid-cols-12 gap-2 pr-2">${monthLabels}</div>
                 </div>
             `;
             container.appendChild(gHeader);
 
             displayData.forEach(r => {
                 const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
-                const cat = r[6] || '';
+                const cat = (r[6] || '').trim();
+                const isManos = cat.toUpperCase().includes("MANOS");
+                const catColorClass = isManos
+                    ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                    : "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400";
+
                 const label = document.createElement('div');
-                label.className = "w-[450px] shrink-0 text-xs font-bold text-slate-900 dark:text-white pr-4";
-                label.innerHTML = `${r[1]} <span class="bg-indigo-50 dark:bg-indigo-900/10 px-2 py-0.5 rounded-full text-[9px] text-slate-400 font-bold ml-2 whitespace-nowrap">${cat}</span>`;
+                label.className = "w-[450px] shrink-0 text-sm font-black text-slate-900 dark:text-white pr-4 leading-tight";
+                label.innerHTML = `${r[1]} <span class="${catColorClass} px-2 py-0.5 rounded-full text-[10px] font-black ml-2 whitespace-nowrap uppercase">${cat}</span>`;
                 label.title = r[1];
                 const lineContainer = document.createElement('div'); lineContainer.className = "gantt-lines-container";
                 const cod = String(r[0]).trim();
                 const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
                 for (let i = 0; i < 12; i++) {
-                    const seg = document.createElement('div'); seg.className = "line-segment";
+                    const isDivider = [2, 5, 8].includes(i);
+                    const seg = document.createElement('div'); seg.className = `line-segment ${isDivider ? 'border-r-2 border-slate-200 dark:border-slate-800/50 pr-1' : ''}`;
                     const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
                     const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
                     const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
                     const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
-                    seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
+                    seg.innerHTML = `${dispE ? `<div class="gantt-value-top text-[11px] font-black">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom text-[11px] font-black">${dispM}</div>` : ''}`;
                     initiativeMilestones.forEach(m => {
                         const mDate = m[3] ? new Date(m[3]) : null;
                         if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
@@ -1356,6 +1373,14 @@
             });
 
             Object.values(groups).sort((a, b) => b.totalExp - a.totalExp).forEach(group => {
+                // Sort initiatives within the VPE: Gasto de Personal first
+                const catOrder = { "GASTO DE PERSONAL": 1, "MANOS EXTENDIDAS": 2 };
+                group.inits.sort((a, b) => {
+                    const cA = (a[6] || "").trim().toUpperCase();
+                    const cB = (b[6] || "").trim().toUpperCase();
+                    return (catOrder[cA] || 99) - (catOrder[cB] || 99);
+                });
+
                 const groupDiv = document.createElement('div');
                 groupDiv.className = "vpe-gantt-group";
 
@@ -1377,7 +1402,11 @@
                 `;
                 groupDiv.appendChild(header);
 
-                const gHeader = document.createElement('div'); gHeader.className = "flex flex-col gap-1 px-6 mb-4";
+                const cleanVpeName = group.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+                const isTec = cleanVpeName.includes('TECNOLOGIA');
+
+                const gHeader = document.createElement('div');
+                gHeader.className = `flex flex-col gap-1 px-6 mb-4 ${isTec ? 'hidden' : ''}`;
 
                 let qLabels = '<div class="flex-1 grid grid-cols-4 gap-2 text-[12px] font-black text-slate-400 uppercase tracking-widest text-center px-1">';
                 ['Q1', 'Q2', 'Q3', 'Q4'].forEach(q => { qLabels += `<div class="border-b border-slate-100 dark:border-slate-800 pb-1">${q}</div>`; });
@@ -1393,7 +1422,12 @@
                     </div>
                     <div class="flex items-center gap-4">
                         <div class="w-[450px] shrink-0"></div>
-                        <div class="flex-1 grid grid-cols-12 gap-2">${monthLabels}</div>
+                        <div class="flex-1 grid grid-cols-12 gap-2 pr-2">
+                            ${months.map((m, idx) => {
+                    const isDivider = [2, 5, 8].includes(idx);
+                    return `<div class="flex-1 text-center text-[12px] uppercase tracking-widest text-slate-900 dark:text-slate-100 font-black ${isDivider ? 'border-r-2 border-slate-300 dark:border-slate-700' : ''}">${m}</div>`;
+                }).join('')}
+                        </div>
                     </div>
                 `;
                 groupDiv.appendChild(gHeader);
@@ -1402,7 +1436,6 @@
                 const vpIdx = 4; // Col E
 
                 // Optimization: Pre-sort or partition if VPE is Tecnología
-                const cleanVpeName = group.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
                 if (cleanVpeName.includes('TECNOLOGIA')) {
                     const subGroupsMap = {};
                     group.inits.forEach(r => {
@@ -1428,6 +1461,26 @@
                             </div>
                         `;
                         groupDiv.appendChild(sh);
+
+                        // Contextual Header for each sub-group (Months + Qs)
+                        const subHeaderLabels = document.createElement('div');
+                        subHeaderLabels.className = "flex flex-col gap-1 px-6 mb-2 opacity-60";
+                        subHeaderLabels.innerHTML = `
+                            <div class="flex items-center gap-4">
+                                <div class="w-[450px] shrink-0"></div>
+                                ${qLabels}
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="w-[450px] shrink-0"></div>
+                                <div class="flex-1 grid grid-cols-12 gap-2 pr-2">
+                                    ${months.map((m, idx) => {
+                            const isDivider = [2, 5, 8].includes(idx);
+                            return `<div class="flex-1 text-center text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold ${isDivider ? 'border-r-2 border-slate-200 dark:border-slate-800' : ''}">${m}</div>`;
+                        }).join('')}
+                                </div>
+                            </div>
+                        `;
+                        groupDiv.appendChild(subHeaderLabels);
 
                         // Initiatives in sub-group
                         sg.inits.forEach(r => {
@@ -1465,19 +1518,24 @@
 
         function renderGanttRow(r, potIdx, matIdx) {
             const row = document.createElement('div'); row.className = "gantt-row group hover:bg-slate-50/50 transition-all px-6 rounded-3xl min-h-[60px] flex items-center";
-            const cat = r[6] || '';
+            const cat = (r[6] || '').trim();
+            const isManos = cat.toUpperCase().includes("MANOS");
+            const catColorClass = isManos
+                ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                : "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400";
+
             const pUSD = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
             const mUSD = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
 
             const label = document.createElement('div');
-            label.className = "w-[450px] shrink-0 text-xs font-bold text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 pr-4";
+            label.className = "w-[450px] shrink-0 text-sm font-black text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 pr-4 leading-tight";
             label.innerHTML = `
                 <div class="flex flex-col">
                     <div class="flex items-baseline gap-2">
                         <span>${r[1]}</span>
-                        <span class="bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full text-[8px] text-slate-400 font-black whitespace-nowrap uppercase">${cat}</span>
+                        <span class="${catColorClass} px-2 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap uppercase">${cat}</span>
                     </div>
-                    <div class="flex gap-3 mt-1 text-[9px] font-black tracking-tight uppercase">
+                    <div class="flex gap-3 mt-1.5 text-[11px] font-black tracking-tight uppercase">
                         <span class="text-indigo-400">POT: $${fmt(pUSD)}M</span>
                         <span class="text-emerald-500">MAT: $${fmt(mUSD)}M</span>
                     </div>
@@ -1491,12 +1549,13 @@
             const initiativeMilestones = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod);
 
             for (let i = 0; i < 12; i++) {
-                const seg = document.createElement('div'); seg.className = "line-segment";
+                const isDivider = [2, 5, 8].includes(i);
+                const seg = document.createElement('div'); seg.className = `line-segment ${isDivider ? 'border-r-2 border-slate-200 dark:border-slate-800/50 pr-1' : ''}`;
                 const exp = parseFloat(r[33 + i]) || 0, mat = parseFloat(r[67 + i]) || 0;
                 const w = exp > 0 ? (mat / exp) * 100 : (mat > 0 ? 100 : 0);
                 const dispE = exp > 0 ? (exp / 1e6).toFixed(1) + 'M' : '';
                 const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
-                seg.innerHTML = `${dispE ? `<div class="gantt-value-top">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom">${dispM}</div>` : ''}`;
+                seg.innerHTML = `${dispE ? `<div class="gantt-value-top text-[11px] font-black">${dispE}</div>` : ''}<div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div><div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>${dispM ? `<div class="gantt-value-bottom text-[11px] font-black">${dispM}</div>` : ''}`;
                 initiativeMilestones.forEach(m => {
                     const mDate = m[3] ? new Date(m[3]) : null;
                     if (mDate && !isNaN(mDate.getTime()) && mDate.getMonth() === i) {
@@ -1514,19 +1573,20 @@
             const row = document.createElement('div');
             row.className = `flex items-center gap-4 px-6 py-4 rounded-2xl ${extraClasses}`;
             const label = document.createElement('div');
-            label.className = "w-[450px] shrink-0 text-[12px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-2";
+            label.className = "w-[450px] shrink-0 text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-2 leading-tight";
             label.innerText = title;
 
             const container = document.createElement('div');
             container.className = "flex-1 grid grid-cols-12 gap-2";
-            monthlyData.forEach(m => {
+            monthlyData.forEach((m, idx) => {
+                const isDivider = [2, 5, 8].includes(idx);
                 const col = document.createElement('div');
-                col.className = "text-center flex flex-col justify-center min-h-[40px]";
+                col.className = `text-center flex flex-col justify-center min-h-[40px] ${isDivider ? 'border-r border-slate-200 dark:border-slate-800 pr-1' : ''}`;
                 const eM = (m.exp / 1e6).toFixed(1);
                 const mM = (m.mat / 1e6).toFixed(1);
                 col.innerHTML = `
-                    <div class="text-[12px] font-black text-indigo-500 dark:text-indigo-400 leading-none">${m.exp > 0 ? '$' + eM + 'M' : '-'}</div>
-                    <div class="text-[12px] font-black text-emerald-600 dark:text-emerald-400 mt-1.5 leading-none">${m.mat > 0 ? '$' + mM + 'M' : '-'}</div>
+                    <div class="text-[13px] font-black text-indigo-500 dark:text-indigo-400 leading-none">${m.exp > 0 ? '$' + eM + 'M' : '-'}</div>
+                    <div class="text-[13px] font-black text-emerald-600 dark:text-emerald-400 mt-2 leading-none">${m.mat > 0 ? '$' + mM + 'M' : '-'}</div>
                 `;
                 container.appendChild(col);
             });

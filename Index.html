@@ -415,7 +415,7 @@
         .gantt-grid-system {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(12, minmax(60px, 1fr));
+            grid-template-columns: repeat(12, 1fr);
             gap: 0.5rem;
         }
 
@@ -424,21 +424,37 @@
             align-items: center;
             padding-left: 1.5rem;
             padding-right: 1.5rem;
-            min-width: 1400px;
         }
 
         .gantt-label-box {
-            width: 450px;
+            width: var(--gantt-label-w, 400px);
             flex-shrink: 0;
             padding-right: 1rem;
             display: flex;
             align-items: center;
+            font-size: var(--gantt-font-size, 14px);
         }
 
-        .gantt-row,
-        .summary-row {
-            min-width: 1400px;
+        :root {
+            --gantt-label-w: 420px;
+            --gantt-font-size: 15px;
         }
+
+        @media (max-width: 1400px) {
+            :root {
+                --gantt-label-w: 300px;
+                --gantt-font-size: 13px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            :root {
+                --gantt-label-w: 240px;
+                --gantt-font-size: 11px;
+            }
+        }
+
+        /* Removed redundant scroll wrappers */
 
         /* Collapsible Sidebar Styles */
         #sidebar.collapsed {
@@ -699,7 +715,6 @@
                                 <div id="pop-init-hitos" class="space-y-3 max-h-40 overflow-y-auto pr-2"></div>
                             </div>
                         </div>
-                    </div>
                 </section>
                 <!-- View: INITIATIVES & GANTT -->
                 <section id="view-initiatives" class="view hidden space-y-6">
@@ -878,7 +893,6 @@
                             </div>
                         </div>
                         <div id="gantt-container" class="space-y-6"></div>
-                    </div>
                 </section>
             </div>
         </main>
@@ -1672,7 +1686,7 @@
             const mUSD = parseFloat(String(r[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
 
             const label = document.createElement('div');
-            label.className = "gantt-label-box text-[15px] font-black text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 leading-tight py-2";
+            label.className = "gantt-label-box font-black text-indigo-600 dark:text-indigo-400 cursor-pointer hover:underline decoration-2 underline-offset-4 leading-tight py-2";
             label.innerHTML = `
                 <div class="flex flex-col w-full">
                     <div class="flex items-baseline gap-2">
@@ -1733,7 +1747,7 @@
 
             const label = document.createElement('div');
             const isSubTotal = title.startsWith("SUB-TOTAL");
-            label.className = `gantt-label-box text-[15px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-tight ${isSubTotal ? 'pl-20' : ''}`;
+            label.className = `gantt-label-box font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-tight ${isSubTotal ? 'pl-20' : ''}`;
             label.innerText = title;
 
             const grid = document.createElement('div');

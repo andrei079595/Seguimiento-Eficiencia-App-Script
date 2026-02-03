@@ -42,7 +42,9 @@ function getInitialData() {
     let filteredBase = rows;
     // Filter logic for initial load: 
     // Profile 1 & 2: Full Access (Profile 2 will use frontend toggle to filter departmental view)
-    if (userProfile.perfil == 1 || userProfile.perfil == 2) {
+    // Profile 3 + DESIGN DEPT: Also Full Access (they get the switch on frontend)
+    const isDesignDept = (userProfile.departamento || "").toString().trim().toUpperCase() === "DEPTO. DE DISEÑO ORGANIZACIONAL";
+    if (userProfile.perfil == 1 || userProfile.perfil == 2 || (userProfile.perfil == 3 && isDesignDept)) {
         filteredBase = rows;
     }
     // Profile 3: Individual Access

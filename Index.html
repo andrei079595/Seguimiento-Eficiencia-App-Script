@@ -264,7 +264,7 @@
 
         .gantt-value-top {
             position: absolute;
-            top: -12px;
+            top: 5px;
             width: 100%;
             text-align: center;
             font-size: 8px;
@@ -274,7 +274,7 @@
 
         .gantt-value-bottom {
             position: absolute;
-            top: 50px;
+            top: 52px;
             width: 100%;
             text-align: center;
             font-size: 8px;
@@ -654,30 +654,74 @@
                         </div>
                     </div>
                     <!-- VPE Table -->
-                    <div
-                        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden mt-8">
-                        <div class="overflow-x-auto">
+                    <div id="vpe-summary-section"
+                        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden mt-8 transition-all duration-300">
+                        <div
+                            class="p-6 cursor-pointer flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all border-b border-slate-200 dark:border-slate-800">
+                            <div>
+                                <h3 onclick="toggleAccordion('vpe-summary-content', 'vpe-summary-icon')"
+                                    class="text-xl font-black uppercase tracking-tight">Resumen por VPE</h3>
+                                <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Visión
+                                    consolidada de metas y ahorros</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <svg id="vpe-summary-icon"
+                                    onclick="toggleAccordion('vpe-summary-content', 'vpe-summary-icon')"
+                                    class="w-6 h-6 transition-transform rotate-180" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="vpe-summary-content" class="overflow-x-auto">
                             <table class="w-full text-left text-sm min-w-[1200px]">
                                 <thead class="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200">
                                     <tr>
-                                        <th
-                                            class="px-8 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                        <th rowspan="2"
+                                            class="px-8 py-6 font-black uppercase text-[12px] text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/80">
                                             VPE</th>
-                                        <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
+                                        <th rowspan="2"
+                                            class="px-6 py-6 font-black uppercase text-[12px] text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 text-center bg-slate-100/50 dark:bg-slate-900/80">
                                             Meta ($M)</th>
+                                        <th colspan="3"
+                                            class="px-4 py-4 font-black uppercase text-[12px] text-indigo-700 dark:text-indigo-400 border-b border-indigo-100 dark:border-indigo-900/40 text-center bg-indigo-100/30 dark:bg-indigo-900/20">
+                                            Oportunidad $ MM</th>
+                                        <th rowspan="2"
+                                            class="px-6 py-6 font-black uppercase text-[12px] text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-800 text-center bg-slate-100/50 dark:bg-slate-900/80">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span class="text-2xl">👥</span>
+                                                <span class="leading-none text-[12px]">FTEs</span>
+                                            </div>
+                                        </th>
+                                        <th colspan="4"
+                                            class="px-4 py-4 font-black uppercase text-[12px] text-emerald-700 dark:text-emerald-400 border-b border-emerald-100 dark:border-emerald-900/40 text-center bg-emerald-100/30 dark:bg-indigo-900/20">
+                                            Distribución 2026</th>
+                                    </tr>
+                                    <tr>
+                                        <!-- Oportunidad deslose (REORDERED) -->
                                         <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
-                                            Identificado ($M)</th>
+                                            class="px-4 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                            M.Ext.</th>
                                         <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
-                                            Materializado ($M)</th>
+                                            class="px-4 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                            G.Person.</th>
                                         <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
-                                            % ID / Meta</th>
+                                            class="px-4 py-4 font-black uppercase text-[10px] text-indigo-700 dark:text-indigo-400 text-center border-r border-slate-200 dark:border-slate-800 bg-indigo-50 dark:bg-indigo-950/20">
+                                            Total</th>
+                                        <!-- Trimesters -->
                                         <th
-                                            class="px-6 py-6 font-black uppercase text-xs text-slate-900 dark:text-white">
-                                            % MAT / Meta</th>
+                                            class="px-6 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                            Q1</th>
+                                        <th
+                                            class="px-6 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                            Q2</th>
+                                        <th
+                                            class="px-6 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                            Q3</th>
+                                        <th
+                                            class="px-6 py-4 font-black uppercase text-[10px] text-slate-500 dark:text-slate-400 text-center bg-slate-50 dark:bg-slate-900">
+                                            Q4</th>
                                     </tr>
                                 </thead>
                                 <tbody id="vpe-table-body"></tbody>
@@ -685,23 +729,31 @@
                         </div>
                     </div>
                     <!-- VPE Gantt Section -->
-                    <div
-                        class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl mt-8 relative">
-                        <div class="flex justify-between items-center mb-10">
+                    <div id="vpe-gantt-section"
+                        class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl mt-8 relative transition-all duration-300">
+                        <div onclick="toggleAccordion('vpe-gantt-content', 'vpe-gantt-icon')"
+                            class="p-8 cursor-pointer flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-t-3xl transition-all">
                             <div>
                                 <h3 class="text-xl font-black uppercase tracking-tight">Cronograma por VPE e Iniciativa
                                 </h3>
                                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1 italic">
                                     Haz clic en el nombre de la iniciativa para ver detalles</p>
                             </div>
-                            <div class="flex items-center gap-4">
+                            <svg id="vpe-gantt-icon" class="w-6 h-6 transition-transform rotate-180" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                        <div id="vpe-gantt-content" class="p-8">
+                            <div class="flex justify-end mb-6">
                                 <button onclick="openVpePdfModal()"
                                     class="px-6 py-2.5 bg-rose-600 text-white text-xs font-black rounded-xl shadow-lg hover:bg-rose-700 transition-all uppercase tracking-widest flex items-center gap-2">
                                     <span>📄</span> Exportar a PDF
                                 </button>
                             </div>
+                            <div id="vpe-gantt-container" class="space-y-4"></div>
                         </div>
-                        <div id="vpe-gantt-container" class="space-y-4"></div>
                         <!-- Initiative Detail Popover -->
                         <div id="init-detail-popover" class="init-popover">
                             <div class="popover-arrow"></div>
@@ -1110,12 +1162,24 @@
             const catIdx = findIdx(['categoria', 'fuente', 'manos'], 6);
             const vpeIdx = findIdx(['vpe'], 3);
             const deptIdx = findIdx(['departamento', 'equipo'], 4);
+            const fteIdx = findIdx(['potencial (fte)'], 17);
+            const metaIdx = findIdx(['meta'], 1);
+            const pygIdx = 89; // PyG Index
+
             appData.goals.slice(1).forEach(row => {
-                if (row && row[0]) vpeMap[String(row[0]).trim()] = { meta: parseFloat(row[1]) || 0, pot: 0, mat: 0 };
+                if (row && row[0]) {
+                    vpeMap[String(row[0]).trim()] = {
+                        meta: parseFloat(row[1]) || 0,
+                        pot: 0,
+                        mat: 0,
+                        manos: 0,
+                        personal: 0,
+                        fte: 0,
+                        q1: 0, q2: 0, q3: 0, q4: 0
+                    };
+                }
             });
-            let q1E = 0, q2E = 0, q3E = 0, q4E = 0;
-            let q1M = 0, q2M = 0, q3M = 0, q4M = 0;
-            let pyg = 0, totalPot = 0, totalMat = 0;
+
             const filteredBase = appData.baseData.filter(row => {
                 if (!row) return false;
                 if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
@@ -1126,13 +1190,6 @@
                     );
                     if (!isOwnTeam) return false;
                 }
-                const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
-                const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
-                    const l = f.toLowerCase();
-                    return rowCat.includes(l) || l.includes(rowCat);
-                });
-                if (!passCat) return false;
-
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
                 if (!passVpe) return false;
@@ -1142,53 +1199,130 @@
                 const passFrente = appData.frenteFilters.size === 0 || appData.frenteFilters.has(rowFrente);
                 if (!passFrente) return false;
 
+                const respName = row[10] ? String(row[10]).trim() : '';
+                const passResp = appData.respFilters.size === 0 || appData.respFilters.has(respName);
+                if (!passResp) return false;
+
+                const rowCat = row[catIdx] ? String(row[catIdx]).trim().toLowerCase() : '';
+                const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
+                    const l = f.toLowerCase();
+                    return rowCat.includes(l) || l.includes(rowCat);
+                });
+                if (!passCat) return false;
+
                 return true;
             });
+
             filteredBase.forEach(row => {
                 const vpe = row[vpeIdx] ? String(row[vpeIdx]).trim() : 'Sin VPE';
-                if (!vpeMap[vpe]) vpeMap[vpe] = { meta: 0, pot: 0, mat: 0 };
+                if (!vpeMap[vpe]) {
+                    vpeMap[vpe] = {
+                        meta: 0,
+                        pot: 0,
+                        manos: 0,
+                        personal: 0,
+                        fte: 0,
+                        q1: 0, q2: 0, q3: 0, q4: 0,
+                        q1M: 0, q2M: 0, q3M: 0, q4M: 0
+                    };
+                }
+
+                const meta = parseFloat(String(row[metaIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                // If meta is very small (e.g. 5), treat as Millions
+                const metaUnit = meta < 100000 ? meta * 1e6 : meta;
+
+                vpeMap[vpe].meta += metaUnit;
                 const p = parseFloat(String(row[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;
                 const m = parseFloat(String(row[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
-                vpeMap[vpe].pot += p; vpeMap[vpe].mat += m;
-                totalPot += p; totalMat += m;
-                q1E += parseFloat(row[51]) || 0; q2E += parseFloat(row[52]) || 0;
-                q3E += parseFloat(row[53]) || 0; q4E += parseFloat(row[54]) || 0;
-                q1M += parseFloat(row[85]) || 0; q2M += parseFloat(row[86]) || 0;
-                q3M += parseFloat(row[87]) || 0; q4M += parseFloat(row[88]) || 0;
-                pyg += parseFloat(row[89]) || 0;
+                const ft = parseFloat(row[fteIdx]) || 0;
+                const cat = (row[catIdx] || "").toString().toUpperCase();
+
+                vpeMap[vpe].pot += p;
+                vpeMap[vpe].mat += m;
+                vpeMap[vpe].fte += ft;
+
+                if (cat.includes("MANOS")) vpeMap[vpe].manos += p;
+                else if (cat.includes("PERSONAL")) vpeMap[vpe].personal += p;
+
+                vpeMap[vpe].q1 += parseFloat(row[51]) || 0;
+                vpeMap[vpe].q2 += parseFloat(row[52]) || 0;
+                vpeMap[vpe].q3 += parseFloat(row[53]) || 0;
+                vpeMap[vpe].q4 += parseFloat(row[54]) || 0;
             });
-            document.getElementById('pyg-total').innerText = `$${fmt(pyg)}M`;
-            document.getElementById('pot-total-exec').innerText = `$${fmt(totalPot)}M`;
+
+            // Running totals for footer and KPI cards
+            let grandMeta = 0, grandPot = 0, grandManos = 0, grandPersonal = 0, grandFte = 0;
+            let grandQ1 = 0, grandQ2 = 0, grandQ3 = 0, grandQ4 = 0;
+            let totalMat = 0, totalPyg = 0;
+            let grandQ1M = 0, grandQ2M = 0, grandQ3M = 0, grandQ4M = 0;
+
+            filteredBase.forEach(row => {
+                totalMat += parseFloat(String(row[matIdx]).replace(/[^0-9.-]+/g, "")) || 0;
+                totalPyg += parseFloat(row[pygIdx]) || 0;
+                grandQ1M += parseFloat(row[85]) || 0; grandQ2M += parseFloat(row[86]) || 0;
+                grandQ3M += parseFloat(row[87]) || 0; grandQ4M += parseFloat(row[88]) || 0;
+            });
+
+            document.getElementById('pot-total-exec').innerText = `$${fmt(filteredBase.reduce((acc, r) => acc + (parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0), 0))}M`;
             document.getElementById('mat-total-exec').innerText = `$${fmt(totalMat)}M`;
-            const labels = [], pots = [];
+            document.getElementById('pyg-total').innerText = `$${fmt(totalPyg)}M`;
+
             Object.keys(vpeMap).sort((a, b) => vpeMap[b].meta - vpeMap[a].meta).forEach(vpe => {
                 const i = vpeMap[vpe];
-                labels.push(vpe); pots.push(i.pot / 1000000);
+                // Only show rows that have some data or a meta
+                if (i.meta === 0 && i.pot === 0 && i.mat === 0) return;
+
+                grandMeta += i.meta; grandPot += i.pot; grandManos += i.manos;
+                grandPersonal += i.personal; grandFte += i.fte;
+                grandQ1 += i.q1; grandQ2 += i.q2; grandQ3 += i.q3; grandQ4 += i.q4;
+
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all";
+                tr.className = "hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-all border-b border-slate-100 dark:border-slate-800 group";
+
+                const fmtQ = (val, totalMeta) => {
+                    const p = totalMeta > 0 ? (val / totalMeta * 100).toFixed(1) : '0.0';
+                    return `<div class="flex items-center justify-center gap-2"><span class="font-black text-slate-700 dark:text-slate-300">$${fmt(val)}</span><span class="text-[9px] text-emerald-600 dark:text-emerald-400 font-black px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-md">${p}%</span></div>`;
+                };
+
                 tr.innerHTML = `
-                    <td class="px-8 py-5 font-black text-slate-900 dark:text-slate-100">${vpe}</td>
-                    <td class="px-6 py-5 font-mono text-slate-500 dark:text-slate-400">$${fmt(i.meta)}M</td>
-                    <td class="px-6 py-5 font-mono text-indigo-600 dark:text-indigo-400 font-black">$${fmt(i.pot)}M</td>
-                    <td class="px-6 py-5 font-mono text-emerald-600 dark:text-emerald-400 font-black">$${fmt(i.mat)}M</td>
-                    <td class="px-6 py-5 font-black text-xs text-indigo-500">${(i.meta > 0 ? i.pot / i.meta * 100 : 0).toFixed(1)}%</td>
-                    <td class="px-6 py-5 font-black text-xs text-emerald-500">${(i.meta > 0 ? i.mat / i.meta * 100 : 0).toFixed(1)}%</td>
+                    <td class="px-8 py-5 font-black text-slate-900 dark:text-slate-100 border-r border-slate-100 dark:border-slate-800/50">${vpe}</td>
+                    <td class="px-6 py-5 font-bold text-slate-500 dark:text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50 bg-slate-50/20 dark:bg-slate-900/20 text-xs">$${fmt(i.meta)}M</td>
+                    <!-- Oportunidad deslose (M.Ext -> G.Person -> Total) -->
+                    <td class="px-4 py-5 font-bold text-slate-600 dark:text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">$${fmt(i.manos)}</td>
+                    <td class="px-4 py-5 font-bold text-slate-600 dark:text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">$${fmt(i.personal)}</td>
+                    <td class="px-4 py-5 font-black text-indigo-600 dark:text-indigo-400 text-center border-r border-slate-100 dark:border-slate-800/50 bg-indigo-50/10 dark:bg-indigo-900/10">$${fmt(i.pot)}</td>
+                    
+                    <td class="px-6 py-5 font-black text-slate-800 dark:text-slate-200 text-center text-[13px] border-r border-slate-100 dark:border-slate-800/50">${i.fte.toFixed(0)}</td>
+                    
+                    <td class="px-6 py-5 text-center border-r border-slate-100 dark:border-slate-800/50 group-hover:bg-emerald-50/10">${fmtQ(i.q1, i.meta)}</td>
+                    <td class="px-6 py-5 text-center border-r border-slate-100 dark:border-slate-800/50 group-hover:bg-emerald-50/10">${fmtQ(i.q2, i.meta)}</td>
+                    <td class="px-6 py-5 text-center border-r border-slate-100 dark:border-slate-800/50 group-hover:bg-emerald-50/10">${fmtQ(i.q3, i.meta)}</td>
+                    <td class="px-6 py-5 text-center group-hover:bg-emerald-50/10">${fmtQ(i.q4, i.meta)}</td>
                 `;
                 tbody.appendChild(tr);
             });
-            renderVPECharts(labels, pots, [q1E, q2E, q3E, q4E], [q1M, q2M, q3M, q4M]);
-            const catBox = document.getElementById('vpe-category-filters');
-            if (catBox) {
-                catBox.innerHTML = '';
-                ['Manos Extendidas', 'Gasto de Personal'].forEach(v => {
-                    const isActive = appData.catFilters.has(v);
-                    const b = document.createElement('button');
-                    b.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
-                    b.innerText = v;
-                    b.onclick = () => { if (appData.catFilters.has(v)) appData.catFilters.delete(v); else appData.catFilters.add(v); buildVPEView(); buildInitiativesView(); };
-                    catBox.appendChild(b);
-                });
-            }
+
+            // Add totals row (FIXED for Light Mode contrast - FORCING WHITE TEXT VIA STYLE)
+            const tf = document.createElement('tr');
+            tf.className = "bg-slate-800 dark:bg-slate-900 text-white font-black text-xs uppercase tracking-widest shadow-2xl relative z-10 sticky bottom-0 border-t-2 border-slate-700";
+
+            const whiteStyle = 'style="color: white !important;"';
+            tf.innerHTML = `
+                <td class="px-8 py-7" ${whiteStyle}>TOTAL GENERAL</td>
+                <td class="px-6 py-7 text-center border-r border-slate-700/50 bg-slate-700/20" ${whiteStyle}>$${fmt(grandMeta / 1e6)}M</td>
+                <td class="px-4 py-7 text-center border-r border-slate-700/50 bg-slate-700/20" ${whiteStyle}>$${fmt(grandManos)}</td>
+                <td class="px-4 py-7 text-center border-r border-slate-700/50 bg-slate-700/20" ${whiteStyle}>$${fmt(grandPersonal)}</td>
+                <td class="px-4 py-7 text-center border-r border-slate-700/50 bg-indigo-600/90 shadow-inner" ${whiteStyle}>$${fmt(grandPot)}</td>
+                <td class="px-6 py-7 text-center border-r border-slate-700/50 bg-slate-700/20 text-[15px]" ${whiteStyle}>${grandFte.toFixed(0)}</td>
+                <td class="px-6 py-7 text-center border-r border-slate-700/50 bg-emerald-700/60" ${whiteStyle}>$${fmt(grandQ1)}</td>
+                <td class="px-6 py-7 text-center border-r border-slate-700/50 bg-emerald-700/60" ${whiteStyle}>$${fmt(grandQ2)}</td>
+                <td class="px-6 py-7 text-center border-r border-slate-700/50 bg-emerald-700/60" ${whiteStyle}>$${fmt(grandQ3)}</td>
+                <td class="px-6 py-7 text-center bg-emerald-700/60" ${whiteStyle}>$${fmt(grandQ4)}</td>
+            `;
+            tbody.appendChild(tf);
+
+            // Update charts with aggregated data
+            renderVPECharts(Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0), Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0).map(v => vpeMap[v].pot / 1e6), [grandQ1, grandQ2, grandQ3, grandQ4], [grandQ1M, grandQ2M, grandQ3M, grandQ4M]);
 
             // Sync with other filters
             const buildVPEChips = (containerId, sourceSet, activeSet) => {
@@ -1244,12 +1378,17 @@
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const respName = row[10] ? String(row[10]).trim() : '';
                 const rowFrente = row[fIdx] ? String(row[fIdx]).trim() : '';
+                const rowCat = row[findIdx(['categoria', 'fuente', 'manos'], 6)] ? String(row[findIdx(['categoria', 'fuente', 'manos'], 6)]).trim().toLowerCase() : '';
 
                 const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
                 const passResp = appData.respFilters.size === 0 || appData.respFilters.has(respName);
                 const passFrente = appData.frenteFilters.size === 0 || appData.frenteFilters.has(rowFrente);
+                const passCat = appData.catFilters.size === 0 || Array.from(appData.catFilters).some(f => {
+                    const l = f.toLowerCase();
+                    return rowCat.includes(l) || l.includes(rowCat);
+                });
 
-                return passVpe && passResp && passFrente;
+                return passVpe && passResp && passFrente && passCat;
             });
 
             google.script.run
@@ -1771,6 +1910,69 @@
 
             row.appendChild(label); row.appendChild(grid);
             return row;
+        }
+
+        function toggleAccordion(contentId, iconId) {
+            const content = document.getElementById(contentId);
+            const icon = document.getElementById(iconId);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+
+        function exportTableToPDF(elementId, filename) {
+            const element = document.getElementById(elementId);
+            const isDark = document.body.classList.contains('dark');
+
+            showToast('Preparando exportación fluida...');
+
+            // To ensure 100% column visibility and single page (no breaks)
+            // We calculate the content height in mm to create a custom page size
+            const widthPx = 1450;
+            const heightPx = element.scrollHeight;
+            const mmFactor = 0.264583; // px to mm at 96 DPI
+
+            // Standard Landscape A4 width is 297mm. 
+            // We use a custom format [width, height] to avoid page breaks.
+            const pdfWidth = 297;
+            const pdfHeight = (heightPx * (pdfWidth / widthPx)); // Scale height proportionally to fit width
+
+            const opt = {
+                margin: [5, 5, 5, 5],
+                filename: `${filename}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: isDark ? '#0f172a' : '#ffffff',
+                    windowWidth: widthPx,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: [pdfWidth, pdfHeight],
+                    orientation: 'landscape'
+                }
+            };
+
+            const originalStyle = element.style.cssText;
+            element.style.width = widthPx + 'px';
+            element.style.overflow = 'visible';
+
+            html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                element.style.cssText = originalStyle;
+            }).save().then(() => {
+                showToast('Exportación PDF (Horizontal) completada');
+            }).catch(err => {
+                element.style.cssText = originalStyle;
+                showToast('Error: ' + err);
+            });
         }
 
         function toggleSidebar() {

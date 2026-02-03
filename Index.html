@@ -1072,13 +1072,17 @@
                 }
                 document.getElementById('user-greeting').innerHTML = `Hola, <span class="text-indigo-600 font-bold">${appData.user.nombre || 'Usuario'}</span>`;
                 document.getElementById('user-initial').innerText = (appData.user.nombre || "U").charAt(0);
-                // Profile 2 Switch Visibility (Apply to both versions)
-                if (appData.user.perfil == 2) {
+                const isDesign = (appData.user.departamento || "").toString().trim().toUpperCase() === "DEPTO. DE DISEÑO ORGANIZACIONAL";
+
+                // Profile 2 & Profile 3 in Design Dept: Show Toggles
+                if (appData.user.perfil == 2 || (appData.user.perfil == 3 && isDesign)) {
                     document.getElementById('exec-toggle-container').classList.remove('hidden');
                     document.getElementById('init-toggle-container').classList.remove('hidden');
                     updateToggleUI();
                 }
-                if (appData.user.perfil == 3) {
+
+                // Profile 3 in Design Dept: Can see VPE Summary
+                if (appData.user.perfil == 3 && !isDesign) {
                     document.getElementById('btn-vpe').classList.add('hidden');
                     switchView('initiatives');
                 } else {
@@ -1098,6 +1102,8 @@
         }
         function updateToggleUI() {
             const isTeam = appData.execViewToggle === 'team';
+            const isDesignProfile3 = appData.user.perfil == 3 && (appData.user.departamento || "").toString().trim().toUpperCase() === "DEPTO. DE DISEÑO ORGANIZACIONAL";
+
             const targets = [
                 { team: 'toggle-team', all: 'toggle-all' },
                 { team: 'toggle-team-init', all: 'toggle-all-init' }
@@ -1106,6 +1112,12 @@
                 const btnTeam = document.getElementById(ids.team);
                 const btnAll = document.getElementById(ids.all);
                 if (!btnTeam || !btnAll) return;
+                
+                if (isDesignProfile3) {
+                    btnTeam.innerText = "Mis Iniciativas";
+                    btnAll.innerText = "Toda la Base";
+                }
+
                 if (isTeam) {
                     btnTeam.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter bg-indigo-600 text-white shadow-md";
                     btnAll.className = "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-tighter text-slate-400 hover:text-indigo-500";
@@ -1181,13 +1193,18 @@
 
             const filteredBase = appData.baseData.filter(row => {
                 if (!row) return false;
-                if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
-                    const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
-                    const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
-                    const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
-                        [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
-                    );
-                    if (!isOwnTeam) return false;
+                if (appData.execViewToggle === 'team') {
+                    if (appData.user.perfil == 2) {
+                        const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
+                        const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
+                        const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
+                            [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
+                        );
+                        if (!isOwnTeam) return false;
+                    } else if (appData.user.perfil == 3) {
+                        const isOwn = [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(appData.user.nombre).trim());
+                        if (!isOwn) return false;
+                    }
                 }
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const passVpe = appData.vpeFilters.size === 0 || appData.vpeFilters.has(vpeName);
@@ -1482,13 +1499,18 @@
             let fPot = 0, fMat = 0, fPotFte = 0, fMatFte = 0;
             const filtered = appData.baseData.filter(row => {
                 if (!row) return false;
-                if (appData.user.perfil == 2 && appData.execViewToggle === 'team') {
-                    const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
-                    const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
-                    const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
-                        [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
-                    );
-                    if (!isOwnTeam) return false;
+                if (appData.execViewToggle === 'team') {
+                    if (appData.user.perfil == 2) {
+                        const rowDept = row[deptIdx] ? String(row[deptIdx]).trim().toLowerCase() : '';
+                        const userDept = appData.user.departamento ? String(appData.user.departamento).trim().toLowerCase() : '';
+                        const isOwnTeam = (rowDept === userDept) || (appData.user.deptUsers || []).some(u =>
+                            [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(u).trim())
+                        );
+                        if (!isOwnTeam) return false;
+                    } else if (appData.user.perfil == 3) {
+                        const isOwn = [row[14], row[15], row[16]].some(r => r && String(r).trim() === String(appData.user.nombre).trim());
+                        if (!isOwn) return false;
+                    }
                 }
                 const vpeName = row[vpeIdx] ? String(row[vpeIdx]).trim() : '';
                 const respName = row[10] ? String(row[10]).trim() : '';
@@ -1720,7 +1742,7 @@
                         </div>
                     </div>
                 `;
-                groupDiv.appendChild(gHeader);
+                if (!isTec) groupDiv.appendChild(gHeader);
 
                 const monthlyTotalsGroup = Array.from({ length: 12 }, () => ({ exp: 0, mat: 0 }));
                 const vpIdx = 4; // Col E
@@ -1861,10 +1883,10 @@
                 const dispM = mat > 0 ? (mat / 1e6).toFixed(1) + 'M' : '';
 
                 seg.innerHTML = `
-                    ${dispE ? `<div class="gantt-value-top text-[10px] font-black">${dispE}</div>` : ''}
+                    ${dispE ? `<div class="gantt-value-top text-[11px] font-black">${dispE}</div>` : ''}
                     <div class="gantt-line-expected ${exp === 0 ? 'hidden' : ''}"></div>
                     <div class="gantt-line-materialized ${mat === 0 ? 'shaded' : ''}" style="width:${Math.min(w, 100)}%"></div>
-                    ${dispM ? `<div class="gantt-value-bottom text-[10px] font-black">${dispM}</div>` : ''}
+                    ${dispM ? `<div class="gantt-value-bottom text-[11px] font-black">${dispM}</div>` : ''}
                 `;
 
                 const hitos = appData.milestones.filter(m => m[1] && String(m[1]).trim() === cod && m[3] && new Date(m[3]).getMonth() === i);
@@ -1902,8 +1924,8 @@
 
                 if (m.exp > 0 || m.mat > 0) {
                     cell.innerHTML = `
-                        <span class="text-[9px] font-black text-indigo-500 leading-none">${m.exp > 0 ? '$' + fmt(m.exp) : '-'}</span>
-                        <span class="text-[9px] font-black text-emerald-500 leading-none">${m.mat > 0 ? '$' + fmt(m.mat) : '-'}</span>
+                        <span class="text-[11px] font-black text-indigo-600 dark:text-indigo-400 leading-none">${m.exp > 0 ? '$' + fmt(m.exp) : '-'}</span>
+                        <span class="text-[11px] font-black text-emerald-600 dark:text-emerald-400 leading-none">${m.mat > 0 ? '$' + fmt(m.mat) : '-'}</span>
                     `;
                 } else {
                     cell.innerHTML = '<span class="text-slate-300 dark:text-slate-700">-</span>';

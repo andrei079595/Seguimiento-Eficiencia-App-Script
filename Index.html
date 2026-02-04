@@ -582,6 +582,10 @@
                                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Frente</h4>
                                 <div id="vpe-frente-filters" class="flex flex-wrap gap-2"></div>
                             </div>
+                            <div class="space-y-4 flex-1">
+                                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest">Trimestre</h4>
+                                <div id="vpe-q-filters" class="flex flex-wrap gap-2"></div>
+                            </div>
                             <div id="exec-toggle-container" class="hidden shrink-0">
                                 <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Vista de
                                     Datos</h4>
@@ -821,6 +825,11 @@
                                 class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Frente</label>
                             <div id="frente-filters" class="flex flex-wrap gap-2"></div>
                         </div>
+                        <div>
+                            <label
+                                class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Trimestre</label>
+                            <div id="q-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                             <div id="category-filter-section" class="flex-1">
                                 <label
@@ -1018,7 +1027,7 @@
     <script>
         let appData = {
             user: {}, baseData: [], goals: [], milestones: [],
-            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(), frenteFilters: new Set(),
+            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(), frenteFilters: new Set(), qFilters: new Set(),
             execViewToggle: 'all', ganttFilter: 'all'
         };
         const fmt = (v) => {
@@ -1226,6 +1235,15 @@
                 });
                 if (!passCat) return false;
 
+                const qMatch = appData.qFilters.size === 0 || Array.from(appData.qFilters).some(q => {
+                    if (q === 'Q1') return [33, 34, 35].some(idx => (parseFloat(row[idx]) || 0) > 0) || [67, 68, 69].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q2') return [36, 37, 38].some(idx => (parseFloat(row[idx]) || 0) > 0) || [70, 71, 72].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q3') return [39, 40, 41].some(idx => (parseFloat(row[idx]) || 0) > 0) || [73, 74, 75].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q4') return [42, 43, 44].some(idx => (parseFloat(row[idx]) || 0) > 0) || [76, 77, 78].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    return false;
+                });
+                if (!qMatch) return false;
+
                 return true;
             });
 
@@ -1342,7 +1360,32 @@
             tbody.appendChild(tf);
 
             // Update charts with aggregated data
-            renderVPECharts(Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0), Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0).map(v => vpeMap[v].pot / 1e6), [grandQ1, grandQ2, grandQ3, grandQ4], [grandQ1M, grandQ2M, grandQ3M, grandQ4M]);
+            const qLabels = ['Q1', 'Q2', 'Q3', 'Q4'];
+            const qExpData = [grandQ1, grandQ2, grandQ3, grandQ4];
+            const qMatData = [grandQ1M, grandQ2M, grandQ3M, grandQ4M];
+            let finalQLabels = [], finalQExp = [], finalQMat = [];
+
+            if (appData.qFilters.size > 0) {
+                qLabels.forEach((q, i) => {
+                    if (appData.qFilters.has(q)) {
+                        finalQLabels.push(q);
+                        finalQExp.push(qExpData[i]);
+                        finalQMat.push(qMatData[i]);
+                    }
+                });
+            } else {
+                finalQLabels = [...qLabels];
+                finalQExp = [...qExpData];
+                finalQMat = [...qMatData];
+            }
+
+            renderVPECharts(
+                Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0),
+                Object.keys(vpeMap).filter(v => vpeMap[v].pot > 0).map(v => vpeMap[v].pot / 1e6),
+                finalQLabels,
+                finalQExp,
+                finalQMat
+            );
 
             // Sync with other filters
             const buildVPEChips = (containerId, sourceSet, activeSet) => {
@@ -1358,6 +1401,9 @@
                     box.appendChild(b);
                 });
             };
+
+            const qs = ['Q1', 'Q2', 'Q3', 'Q4'];
+            buildVPEChips('vpe-q-filters', new Set(qs), appData.qFilters);
 
             const allVpes = new Set();
             const frentes = new Set();
@@ -1426,7 +1472,7 @@
                 })
                 .exportFilteredDataToSheets(filtered, appData.headers);
         }
-        function renderVPECharts(labels, pots, qExpected, qMaterialized) {
+        function renderVPECharts(labels, pots, barLabels, qExpected, qMaterialized) {
             const ctxQ = document.getElementById('vpe-quarter-chart').getContext('2d');
             const ctxP = document.getElementById('vpe-pie-chart').getContext('2d');
             if (vpeChartInstance) vpeChartInstance.destroy();
@@ -1437,7 +1483,7 @@
             vpeChartInstance = new Chart(ctxQ, {
                 type: 'bar',
                 data: {
-                    labels: ['Q1', 'Q2', 'Q3', 'Q4', 'Total'],
+                    labels: [...barLabels, 'Total'],
                     datasets: [
                         { label: 'Esperado', data: [...qExpected, qExpected.reduce((a, b) => a + b, 0)].map(v => v / 1000000), backgroundColor: '#818cf8', borderRadius: 6 },
                         { label: 'Materializado', data: [...qMaterialized, qMaterialized.reduce((a, b) => a + b, 0)].map(v => v / 1000000), backgroundColor: '#10b981', borderRadius: 6 }
@@ -1485,6 +1531,9 @@
             appData.baseData.forEach(row => { if (row && row[fIdx]) frentes.add(String(row[fIdx]).trim()); });
             buildChips('frente-filters', frentes, appData.frenteFilters);
 
+            const qs = ['Q1', 'Q2', 'Q3', 'Q4'];
+            buildChips('q-filters', new Set(qs), appData.qFilters);
+
             const vpeP = document.getElementById('vpe-filter-parent');
             if (vpeP) vpeP.className = appData.user.perfil == 1 ? "block" : "hidden";
             const tbody = document.getElementById('initiatives-table-body');
@@ -1523,7 +1572,16 @@
                 });
                 const rowFrente = row[fIdx] ? String(row[fIdx]).trim() : '';
                 const passFrente = appData.frenteFilters.size === 0 || appData.frenteFilters.has(rowFrente);
-                return passVpe && passResp && passCat && passFrente;
+                
+                const qMatch = appData.qFilters.size === 0 || Array.from(appData.qFilters).some(q => {
+                    if (q === 'Q1') return [33, 34, 35].some(idx => (parseFloat(row[idx]) || 0) > 0) || [67, 68, 69].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q2') return [36, 37, 38].some(idx => (parseFloat(row[idx]) || 0) > 0) || [70, 71, 72].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q3') return [39, 40, 41].some(idx => (parseFloat(row[idx]) || 0) > 0) || [73, 74, 75].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    if (q === 'Q4') return [42, 43, 44].some(idx => (parseFloat(row[idx]) || 0) > 0) || [76, 77, 78].some(idx => (parseFloat(row[idx]) || 0) > 0);
+                    return false;
+                });
+
+                return passVpe && passResp && passCat && passFrente && qMatch;
             });
             filtered.forEach(r => {
                 const p = parseFloat(String(r[potIdx]).replace(/[^0-9.-]+/g, "")) || 0;

@@ -1,1 +1,44 @@
+/**
+ * Extrae el primer nombre y el primer apellido tratando de identificar nombres compuestos.
+ * @param {string} nombreCompleto Texto con el nombre completo.
+ * @customfunction
+ */
+function NOMBRE_Y_APELLIDO(nombreCompleto) {
+  if (!nombreCompleto) return "";
+  
+  // Lista de conectores comunes en apellidos y nombres
+  const conectores = ["DE", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA"];
+  const palabras = nombreCompleto.toString().trim().split(/\s+/);
+  
+  if (palabras.length <= 2) return nombreCompleto;
+
+  let resultado = [];
+  
+  // 1. Tomamos la primera palabra (Primer Nombre)
+  resultado.push(palabras[0]);
+  
+  // 2. Revisamos si la segunda palabra es un conector o un nombre compuesto común
+  // Si la segunda palabra es corta o está en la lista, podría ser parte del nombre o del apellido
+  let indiceApellido = 1;
+  
+  // Caso especial: Nombres compuestos comunes (Juan Carlos, Maria Jose, etc.)
+  const nombresCompuestos = ["JUAN", "MARIA", "JOSE", "ANA", "LUIS"];
+  if (nombresCompuestos.includes(palabras[0].toUpperCase()) && palabras.length > 2) {
+    resultado.push(palabras[1]);
+    indiceApellido = 2;
+  }
+
+  // 3. Buscamos el primer apellido manejando conectores (ej: "De La Espriella")
+  while (indiceApellido < palabras.length) {
+    if (conectores.includes(palabras[indiceApellido].toUpperCase()) && indiceApellido < palabras.length - 1) {
+      resultado.push(palabras[indiceApellido]);
+      indiceApellido++;
+    } else {
+      resultado.push(palabras[indiceApellido]);
+      break; // Ya encontramos el cuerpo del primer apellido
+    }
+  }
+
+  return resultado.join(" ");
+}
 

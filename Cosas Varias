@@ -1,37 +1,36 @@
 /**
- * Extrae nombres compuestos y el primer apellido.
+ * Extrae los dos primeros nombres (si existen) y el primer apellido.
  * @param {string} nombreCompleto Texto con el nombre completo.
  * @customfunction
  */
 function NOMBRE_Y_APELLIDO(nombreCompleto) {
   if (!nombreCompleto) return "";
   
+  // Limpiar espacios extra y dividir por palabras
   const palabras = nombreCompleto.toString().trim().split(/\s+/);
   const conectores = ["DE", "DEL", "LA", "LAS", "LOS"];
   
-  // Lista de nombres que suelen ser el primer o segundo componente de un nombre compuesto
-  const nombresCompuestos = ["MARIA", "PAULA", "JUAN", "JOSE", "ANA", "LUIS", "CARLOS", "ANDREA", "ALEJANDRA"];
-  
+  // Si solo tiene una o dos palabras, lo devolvemos tal cual
   if (palabras.length <= 2) return nombreCompleto;
 
   let resultado = [];
-  resultado.push(palabras[0]); // Siempre incluimos la primera palabra
+  
+  // 1. Siempre tomamos las primeras dos palabras (Nombres)
+  // Esto cubre: "RAUL ALEXANDER", "SERGIO EDUARDO", "MARIA ALEJANDRA", etc.
+  resultado.push(palabras[0]);
+  resultado.push(palabras[1]);
 
-  let i = 1;
+  let i = 2;
 
-  // 1. Verificar si la segunda palabra es parte del nombre (Nombre compuesto)
-  if (nombresCompuestos.includes(palabras[0].toUpperCase()) || nombresCompuestos.includes(palabras[1].toUpperCase())) {
-    resultado.push(palabras[1]);
-    i = 2;
-  }
-
-  // 2. Manejar conectores de apellido (Ej: "De La Espriella" o "De Greiff")
+  // 2. Manejar conectores de apellido (Ej: "DE LA ESPRIELLA")
+  // Revisamos si la palabra actual es un conector para no cortarlo
   while (i < palabras.length) {
     if (conectores.includes(palabras[i].toUpperCase()) && i < palabras.length - 1) {
       resultado.push(palabras[i]);
       i++;
     } else {
-      resultado.push(palabras[i]); // Agregar el cuerpo del apellido
+      // Agregar la palabra que es el apellido propiamente dicho
+      resultado.push(palabras[i]);
       break; 
     }
   }

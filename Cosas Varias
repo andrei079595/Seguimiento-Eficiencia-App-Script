@@ -1,44 +1,40 @@
 /**
- * Extrae el primer nombre y el primer apellido tratando de identificar nombres compuestos.
+ * Extrae nombres compuestos y el primer apellido.
  * @param {string} nombreCompleto Texto con el nombre completo.
  * @customfunction
  */
 function NOMBRE_Y_APELLIDO(nombreCompleto) {
   if (!nombreCompleto) return "";
   
-  // Lista de conectores comunes en apellidos y nombres
-  const conectores = ["DE", "DEL", "LA", "LAS", "LOS", "SAN", "SANTA"];
   const palabras = nombreCompleto.toString().trim().split(/\s+/);
+  const conectores = ["DE", "DEL", "LA", "LAS", "LOS"];
+  
+  // Lista de nombres que suelen ser el primer o segundo componente de un nombre compuesto
+  const nombresCompuestos = ["MARIA", "PAULA", "JUAN", "JOSE", "ANA", "LUIS", "CARLOS", "ANDREA", "ALEJANDRA"];
   
   if (palabras.length <= 2) return nombreCompleto;
 
   let resultado = [];
-  
-  // 1. Tomamos la primera palabra (Primer Nombre)
-  resultado.push(palabras[0]);
-  
-  // 2. Revisamos si la segunda palabra es un conector o un nombre compuesto común
-  // Si la segunda palabra es corta o está en la lista, podría ser parte del nombre o del apellido
-  let indiceApellido = 1;
-  
-  // Caso especial: Nombres compuestos comunes (Juan Carlos, Maria Jose, etc.)
-  const nombresCompuestos = ["JUAN", "MARIA", "JOSE", "ANA", "LUIS"];
-  if (nombresCompuestos.includes(palabras[0].toUpperCase()) && palabras.length > 2) {
+  resultado.push(palabras[0]); // Siempre incluimos la primera palabra
+
+  let i = 1;
+
+  // 1. Verificar si la segunda palabra es parte del nombre (Nombre compuesto)
+  if (nombresCompuestos.includes(palabras[0].toUpperCase()) || nombresCompuestos.includes(palabras[1].toUpperCase())) {
     resultado.push(palabras[1]);
-    indiceApellido = 2;
+    i = 2;
   }
 
-  // 3. Buscamos el primer apellido manejando conectores (ej: "De La Espriella")
-  while (indiceApellido < palabras.length) {
-    if (conectores.includes(palabras[indiceApellido].toUpperCase()) && indiceApellido < palabras.length - 1) {
-      resultado.push(palabras[indiceApellido]);
-      indiceApellido++;
+  // 2. Manejar conectores de apellido (Ej: "De La Espriella" o "De Greiff")
+  while (i < palabras.length) {
+    if (conectores.includes(palabras[i].toUpperCase()) && i < palabras.length - 1) {
+      resultado.push(palabras[i]);
+      i++;
     } else {
-      resultado.push(palabras[indiceApellido]);
-      break; // Ya encontramos el cuerpo del primer apellido
+      resultado.push(palabras[i]); // Agregar el cuerpo del apellido
+      break; 
     }
   }
 
   return resultado.join(" ");
 }
-

@@ -1568,8 +1568,47 @@
             });
             vpePieChartInstance = new Chart(ctxP, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } }, title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } } } }
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: pots, 
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#facc15', '#64748b', '#fb7185', '#38bdf8', '#fbbf24', '#a855f7'], 
+                        borderWidth: 0,
+                        hoverOffset: 25,
+                        spacing: 4
+                    }] 
+                },
+                options: { 
+                    cutout: '65%',
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'right', 
+                            labels: { 
+                                color: textColor, 
+                                boxWidth: 12, 
+                                font: { size: 10, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }, 
+                        title: { 
+                            display: true, 
+                            text: 'Distribución Potencial ($M)', 
+                            color: textColor, 
+                            font: { size: 14, weight: 'bold' },
+                            padding: { bottom: 20 }
+                        },
+                        tooltip: {
+                            padding: 12,
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                            bodyColor: isDark ? '#f1f5f9' : '#1e293b',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1
+                        }
+                    } 
+                }
             });
         }
 
@@ -2244,8 +2283,47 @@
             });
             initPieChartInstance = new Chart(ctxP, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } }, title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } } } }
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: pots, 
+                        backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#facc15', '#64748b', '#fb7185', '#38bdf8', '#fbbf24', '#a855f7'], 
+                        borderWidth: 0,
+                        hoverOffset: 25,
+                        spacing: 4
+                    }] 
+                },
+                options: { 
+                    cutout: '65%',
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            position: 'right', 
+                            labels: { 
+                                color: textColor, 
+                                boxWidth: 12, 
+                                font: { size: 10, weight: 'bold' },
+                                padding: 15
+                            } 
+                        }, 
+                        title: { 
+                            display: true, 
+                            text: 'Top Iniciativas (Potencial $M)', 
+                            color: textColor, 
+                            font: { size: 14, weight: 'bold' },
+                            padding: { bottom: 20 }
+                        },
+                        tooltip: {
+                            padding: 12,
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            titleColor: isDark ? '#f1f5f9' : '#1e293b',
+                            bodyColor: isDark ? '#f1f5f9' : '#1e293b',
+                            borderColor: isDark ? '#334155' : '#e2e8f0',
+                            borderWidth: 1
+                        }
+                    } 
+                }
             });
         }
         function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000); }

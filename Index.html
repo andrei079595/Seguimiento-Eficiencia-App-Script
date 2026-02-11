@@ -533,6 +533,26 @@
                         </svg>
                         <span class="sidebar-text">Iniciativas</span>
                     </button>
+                    <button id="btn-monitoring" onclick="switchView('monitoring')"
+                        class="nav-btn w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all">
+                        <svg class="h-5 w-5 mr-3 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span class="sidebar-text">Seguimiento</span>
+                    </button>
+                    <a href="https://lookerstudio.google.com/reporting/f5cabfc7-6f6e-4419-a4f9-c9c3da267119/page/p_t9yma8usqd" target="_blank"
+                        class="nav-btn w-full flex items-center px-4 py-3 text-sm font-bold rounded-xl transition-all group">
+                        <svg class="h-5 w-5 mr-3 shrink-0 text-slate-400 group-hover:text-indigo-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        <span class="sidebar-text">Herramienta Gastos</span>
+                        <svg class="h-3 w-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                    </a>
                 </nav>
             </div>
             <div class="mt-auto p-6">
@@ -768,8 +788,43 @@
                                 <p class="text-[8px] font-black uppercase text-slate-400 mb-2">Próximos Hitos</p>
                                 <div id="pop-init-hitos" class="space-y-3 max-h-40 overflow-y-auto pr-2"></div>
                             </div>
-                        </div>
+                    </div>
                 </section>
+
+                <!-- View: MONITORING (Seguimiento) -->
+                <section id="view-monitoring" class="view hidden space-y-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Iniciativas en Riesgo</h4>
+                            <span id="risk-count" class="text-4xl font-black text-rose-500">0</span>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+                            <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Potencial en Riesgo</h4>
+                            <span id="risk-potential" class="text-4xl font-black text-indigo-600">$0M</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/50">
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">Iniciativa</th>
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Pot. FTE</th>
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Pot. $</th>
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Mat. FTE</th>
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Mat. $</th>
+                                        <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800">Observaciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monitoring-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <!-- Rows populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- View: INITIATIVES & GANTT -->
                 <section id="view-initiatives" class="view hidden space-y-6">
                     <!-- Initiatives Summary Cards -->
@@ -1099,6 +1154,13 @@
                     if (respSection) respSection.classList.remove('hidden');
                     switchView('vpe');
                 }
+
+                // Monitoring Tab Visibility: Profiles 1 and 2 ONLY
+                const btnMonitoring = document.getElementById('btn-monitoring');
+                if (appData.user.perfil > 2) {
+                    btnMonitoring.classList.add('hidden');
+                }
+
             } catch (e) {
                 handleFatalError(e);
             }
@@ -1143,10 +1205,16 @@
             if (activeView) activeView.classList.remove('hidden');
             const btn = document.getElementById(`btn-${viewId}`);
             if (btn) btn.classList.add('bg-indigo-50', 'text-indigo-700', 'ring-2', 'ring-indigo-100');
-            const titles = { 'vpe': 'Cuadro de Mando Ejecutivo', 'initiatives': 'Gestión de Iniciativas', 'detail': 'Panel de Detalle' };
+            const titles = { 
+                'vpe': 'Cuadro de Mando Ejecutivo', 
+                'initiatives': 'Gestión de Iniciativas', 
+                'monitoring': 'Seguimiento de Riesgos',
+                'detail': 'Panel de Detalle' 
+            };
             document.getElementById('view-title').innerText = titles[viewId] || 'EVA';
             if (viewId === 'vpe') buildVPEView();
             if (viewId === 'initiatives') buildInitiativesView();
+            if (viewId === 'monitoring') buildMonitoringView();
         }
         const findIdx = (keywords, fallback, exactMatch = false) => {
             const h = appData.headers || [];
@@ -1500,9 +1568,45 @@
             });
             vpePieChartInstance = new Chart(ctxP, {
                 type: 'doughnut',
-                data: { labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'], borderWidth: 0, hoverOffset: 30, spacing: 8 }] },
-                options: { cutout: '75%', responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, padding: 25, font: { weight: 'bold', size: 11 } } }, tooltip: { padding: 16, displayColors: true, backgroundColor: isDark ? '#1e293b' : '#ffffff', bodyColor: isDark ? '#f1f5f9' : '#1e293b' } } }
+                data: { labels: labels, datasets: [{ data: pots, backgroundColor: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff', '#f5f7ff'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: textColor, boxWidth: 12, font: { size: 10 } } }, title: { display: true, text: 'Potenciales por iniciativa', color: textColor, font: { size: 12, weight: 'bold' } } } }
             });
+        }
+
+        function buildMonitoringView() {
+            const tbody = document.getElementById('monitoring-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            // CP is index 93. Status "Riesgo"
+            const filtered = appData.baseData.filter(row => row && String(row[93]).trim().toUpperCase() === "RIESGO");
+            
+            let totalRiskPotential = 0;
+            
+            filtered.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all";
+                
+                const potUSD = parseFloat(String(row[18]).replace(/[^0-9.-]+/g, "")) || 0;
+                totalRiskPotential += potUSD;
+                
+                tr.innerHTML = `
+                    <td class="px-6 py-5 font-bold text-slate-800 dark:text-white">${row[1]}</td>
+                    <td class="px-6 py-5 text-center text-slate-500 font-bold">${parseFloat(row[17]) || 0}</td>
+                    <td class="px-6 py-5 text-center text-indigo-600 font-black">$${fmt(row[18])}M</td>
+                    <td class="px-6 py-5 text-center text-slate-500 font-bold">${parseFloat(row[79]) || 0}</td>
+                    <td class="px-6 py-5 text-center text-emerald-500 font-black">$${fmt(row[80])}M</td>
+                    <td class="px-6 py-5 text-xs text-slate-500 italic max-w-xs truncate" title="${row[94] || ''}">${row[94] || 'Sin observaciones'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('risk-count').innerText = filtered.length;
+            document.getElementById('risk-potential').innerText = `$${fmt(totalRiskPotential)}M`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-20 text-center text-slate-400 font-bold text-lg">No hay iniciativas con estado "Riesgo"</td></tr>';
+            }
         }
         function buildInitiativesView() {
             const resps = new Set(), vpes = new Set();
@@ -2253,7 +2357,12 @@
             });
         }
 
-        function toggleDarkMode() { document.body.classList.toggle('dark'); buildVPEView(); buildInitiativesView(); }
+        function toggleDarkMode() { 
+            document.body.classList.toggle('dark'); 
+            buildVPEView(); 
+            buildInitiativesView(); 
+            buildMonitoringView();
+        }
     </script>
 </body>
 

@@ -793,6 +793,7 @@
 
                 <!-- View: MONITORING (Seguimiento) -->
                 <section id="view-monitoring" class="view hidden space-y-8">
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
                             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Iniciativas en Riesgo</h4>
@@ -818,6 +819,60 @@
                                     </tr>
                                 </thead>
                                 <tbody id="monitoring-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <!-- Rows populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6 p-8">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <h3 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">Detalle mensual iniciativas</h3>
+                            <div class="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-xl">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-emerald-500 rounded-full shadow-sm"></div>
+                                    <span>Materializado</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 bg-indigo-500/40 rounded-full border border-indigo-500/20 shadow-sm"></div>
+                                    <span>Potencial</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtros por Mes</h4>
+                            <div id="monitoring-month-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtro por VPE</h4>
+                            <div id="monitoring-vpe-filters" class="flex flex-wrap gap-2"></div>
+                        </div>
+
+                        <div class="overflow-x-auto rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <table class="w-full text-left border-collapse text-[11px]">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-800/50">
+                                        <th class="px-4 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 sticky left-0 bg-slate-50 dark:bg-slate-900 z-10 w-48">Iniciativa</th>
+                                        <th class="px-4 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center w-24">VPE</th>
+                                        <th class="px-4 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center w-20">Total Exp.</th>
+                                        <th class="px-4 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center w-20">Total Mat.</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="0">Ene</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="1">Feb</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="2">Mar</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="3">Abr</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="4">May</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="5">Jun</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="6">Jul</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="7">Ago</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="8">Sep</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="9">Oct</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="10">Nov</th>
+                                        <th class="px-2 py-3 font-black uppercase tracking-widest text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center month-col" data-m="11">Dic</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monthly-risk-table-body" class="divide-y divide-slate-100 dark:divide-slate-800">
                                     <!-- Rows populated by JS -->
                                 </tbody>
                             </table>
@@ -1082,7 +1137,7 @@
     <script>
         let appData = {
             user: {}, baseData: [], goals: [], milestones: [],
-            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(), frenteFilters: new Set(), qFilters: new Set(),
+            vpeFilters: new Set(), respFilters: new Set(), catFilters: new Set(), frenteFilters: new Set(), qFilters: new Set(), monthFilters: new Set(),
             execViewToggle: 'all', ganttFilter: 'all'
         };
         const fmt = (v) => {
@@ -1614,18 +1669,40 @@
 
         function buildMonitoringView() {
             const tbody = document.getElementById('monitoring-table-body');
-            if (!tbody) return;
+            const monthlyTbody = document.getElementById('monthly-risk-table-body');
+            const monthFiltersContainer = document.getElementById('monitoring-month-filters');
+            const vpeFiltersContainer = document.getElementById('monitoring-vpe-filters');
+            
+            if (!tbody || !monthlyTbody || !monthFiltersContainer || !vpeFiltersContainer) return;
+
             tbody.innerHTML = '';
+            monthlyTbody.innerHTML = '';
             
+            const monthsShort = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+            const monthsLong = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+
+            // Build Month Chips
+            monthFiltersContainer.innerHTML = '';
+            monthsShort.forEach((m, idx) => {
+                const btn = document.createElement('button');
+                const isActive = appData.monthFilters.has(idx);
+                btn.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-indigo-400'}`;
+                btn.innerText = m;
+                btn.onclick = () => {
+                    if (appData.monthFilters.has(idx)) appData.monthFilters.delete(idx);
+                    else appData.monthFilters.add(idx);
+                    buildMonitoringView();
+                };
+                monthFiltersContainer.appendChild(btn);
+            });
+
             // CP is index 93. Status "Riesgo"
-            const filtered = appData.baseData.filter(row => row && String(row[93]).trim().toUpperCase() === "RIESGO");
-            
+            const riskData = appData.baseData.filter(row => row && String(row[93]).trim().toUpperCase() === "RIESGO");
             let totalRiskPotential = 0;
             
-            filtered.forEach(row => {
+            riskData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all";
-                
                 const potUSD = parseFloat(String(row[18]).replace(/[^0-9.-]+/g, "")) || 0;
                 totalRiskPotential += potUSD;
                 
@@ -1640,12 +1717,144 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('risk-count').innerText = filtered.length;
+            document.getElementById('risk-count').innerText = riskData.length;
             document.getElementById('risk-potential').innerText = `$${fmt(totalRiskPotential)}M`;
 
-            if (filtered.length === 0) {
+            if (riskData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-20 text-center text-slate-400 font-bold text-lg">No hay iniciativas con estado "Riesgo"</td></tr>';
             }
+
+            // --- SECTION 2: BOTTOM MONTHLY TABLE ---
+            const vpeIdx = findIdx(['vpe'], 3);
+            
+            // Collect unique VPEs for filter
+            const uniqueVPEs = [...new Set(appData.baseData.filter(r => r && r[vpeIdx]).map(r => String(r[vpeIdx]).trim()))].sort();
+            vpeFiltersContainer.innerHTML = '';
+            uniqueVPEs.forEach(vpe => {
+                const btn = document.createElement('button');
+                const isActive = appData.vpeFilters.has(vpe);
+                btn.className = `px-4 py-1.5 text-[10px] font-black rounded-lg border transition-all uppercase tracking-tighter ${isActive ? 'bg-emerald-600 text-white border-emerald-600 shadow-md transform scale-105' : 'border-slate-200 text-slate-400 hover:border-emerald-400'}`;
+                btn.innerText = vpe;
+                btn.onclick = () => {
+                    if (appData.vpeFilters.has(vpe)) appData.vpeFilters.delete(vpe);
+                    else appData.vpeFilters.add(vpe);
+                    buildMonitoringView();
+                };
+                vpeFiltersContainer.appendChild(btn);
+            });
+
+            // Exhaustive search for Monthly Columns (Expected and Materialized)
+            // Based on user: AH-AS (33-44) and BP-CA (67-78)
+            const expCols = monthsShort.map((_, i) => 33 + i);
+            const matCols = monthsShort.map((_, i) => 67 + i);
+
+            let detailData = appData.baseData.filter(row => row && row[1]); 
+            
+            // Apply Filters
+            if (appData.vpeFilters.size > 0) detailData = detailData.filter(row => appData.vpeFilters.has(String(row[vpeIdx]).trim()));
+            if (appData.monthFilters.size > 0) {
+                detailData = detailData.filter(row => {
+                    return Array.from(appData.monthFilters).some(mIdx => {
+                        const exp = parseFloat(row[expCols[mIdx]]) || 0;
+                        const mat = parseFloat(row[matCols[mIdx]]) || 0;
+                        return exp > 0 || mat > 0;
+                    });
+                });
+            }
+
+            const potHeaderIdx = findIdx(['potencial ($)'], 18);
+            const matHeaderIdx = findIdx(['materializado ($)'], 80);
+
+            // Initialize Totals
+            const columnTotals = monthsShort.map(() => ({ exp: 0, mat: 0 }));
+            let totalAnnualExp = 0;
+            let totalAnnualMat = 0;
+
+            detailData.forEach(row => {
+                const mTr = document.createElement('tr');
+                mTr.className = "hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all";
+                
+                const potValVal = parseFloat(row[potHeaderIdx]) || 0;
+                const matValVal = parseFloat(row[matHeaderIdx]) || 0;
+                totalAnnualExp += potValVal;
+                totalAnnualMat += matValVal;
+
+                const cat = (row[6] || '').trim();
+                const isManos = cat.toUpperCase().includes("MANOS");
+                const catColorClass = isManos
+                    ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400"
+                    : "bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400";
+
+                let monthCells = '';
+                monthsShort.forEach((_, mi) => {
+                    const isHidden = appData.monthFilters.size > 0 && !appData.monthFilters.has(mi);
+                    const expVal = parseFloat(row[expCols[mi]]) || 0;
+                    const matVal = parseFloat(row[matCols[mi]]) || 0;
+                    
+                    columnTotals[mi].exp += expVal;
+                    columnTotals[mi].mat += matVal;
+
+                    monthCells += `
+                        <td class="px-1 py-3 text-center transition-opacity duration-300 ${isHidden ? 'opacity-20 grayscale scale-90' : 'opacity-100'}">
+                            <div class="flex flex-col items-center justify-center leading-tight">
+                                <span class="text-[9px] font-black text-indigo-400" title="Potencial">$${fmt(expVal)}M</span>
+                                <span class="text-[10px] font-black text-emerald-500" title="Materializado">$${fmt(matVal)}M</span>
+                            </div>
+                        </td>`;
+                });
+
+                mTr.innerHTML = `
+                    <td class="px-4 py-3 sticky left-0 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 z-10">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-slate-800 dark:text-white">${row[1]}</span>
+                            <span class="mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase w-fit ${catColorClass}">${cat}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 text-center text-slate-400 font-bold">${row[vpeIdx] || 'S/V'}</td>
+                    <td class="px-4 py-3 text-center text-indigo-400 font-black">$${fmt(potValVal)}M</td>
+                    <td class="px-4 py-3 text-center text-emerald-400 font-black">$${fmt(matValVal)}M</td>
+                    ${monthCells}
+                `;
+                monthlyTbody.appendChild(mTr);
+            });
+
+            // ADD TOTALS ROW
+            if (detailData.length > 0) {
+                const totalTr = document.createElement('tr');
+                totalTr.className = "bg-slate-100 dark:bg-slate-800 font-black border-t-2 border-slate-200 dark:border-slate-700";
+                
+                let monthTotalCells = '';
+                monthsShort.forEach((_, mi) => {
+                    const isHidden = appData.monthFilters.size > 0 && !appData.monthFilters.has(mi);
+                    monthTotalCells += `
+                        <td class="px-1 py-4 text-center ${isHidden ? 'opacity-20' : ''}">
+                            <div class="flex flex-col items-center justify-center leading-tight">
+                                <span class="text-[9px] text-indigo-600">$${fmt(columnTotals[mi].exp)}M</span>
+                                <span class="text-[10px] text-emerald-600">$${fmt(columnTotals[mi].mat)}M</span>
+                            </div>
+                        </td>`;
+                });
+
+                totalTr.innerHTML = `
+                    <td class="px-4 py-4 sticky left-0 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-10 text-slate-900 dark:text-white uppercase tracking-widest text-[10px]">TOTALES</td>
+                    <td class="px-4 py-4 text-center text-slate-400">-</td>
+                    <td class="px-4 py-4 text-center text-indigo-700">$${fmt(totalAnnualExp)}M</td>
+                    <td class="px-4 py-4 text-center text-emerald-700">$${fmt(totalAnnualMat)}M</td>
+                    ${monthTotalCells}
+                `;
+                monthlyTbody.appendChild(totalTr);
+            }
+
+            if (detailData.length === 0) {
+                monthlyTbody.innerHTML = '<tr><td colspan="16" class="px-6 py-20 text-center text-slate-400 font-bold text-lg">No hay datos para mostrar</td></tr>';
+            }
+
+            // Sync Header Visibility
+            document.querySelectorAll('.month-col').forEach(th => {
+                const mIdx = parseInt(th.dataset.m);
+                if (appData.monthFilters.size > 0 && !appData.monthFilters.has(mIdx)) th.classList.add('opacity-20');
+                else th.classList.remove('opacity-20');
+            });
         }
         function buildInitiativesView() {
             const resps = new Set(), vpes = new Set();

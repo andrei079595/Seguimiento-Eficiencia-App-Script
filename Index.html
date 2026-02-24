@@ -776,19 +776,6 @@
                             </div>
                             <div id="vpe-gantt-container" class="space-y-4"></div>
                         </div>
-                        <!-- Initiative Detail Popover -->
-                        <div id="init-detail-popover" class="init-popover">
-                            <div class="popover-arrow"></div>
-                            <div class="flex justify-between items-start mb-4">
-                                <h4 id="pop-init-name" class="text-sm font-black leading-tight"></h4>
-                                <button onclick="document.getElementById('init-detail-popover').style.display='none'"
-                                    class="text-slate-400 hover:text-rose-500 font-black px-2">✕</button>
-                            </div>
-                            <div class="space-y-3 relative pl-4 border-l-2 border-slate-100 dark:border-slate-800">
-                                <p class="text-[8px] font-black uppercase text-slate-400 mb-2">Próximos Hitos</p>
-                                <div id="pop-init-hitos" class="space-y-3 max-h-40 overflow-y-auto pr-2"></div>
-                            </div>
-                    </div>
                 </section>
 
                 <!-- View: MONITORING (Seguimiento) -->
@@ -1112,6 +1099,43 @@
             </div>
         </div>
     </div>
+    <!-- Initiative Detail Modal -->
+    <div id="detail-modal" onclick="if(event.target === this) closeDetailModal()"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md cursor-pointer">
+        <div
+            class="bg-white dark:bg-slate-900 w-full max-w-2xl p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] cursor-default">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 id="detail-title" class="text-2xl font-black mb-1">Detalle de la Iniciativa</h3>
+                    <p id="detail-subtitle" class="text-indigo-600 text-[10px] uppercase font-black tracking-widest"></p>
+                </div>
+                <button onclick="closeDetailModal()"
+                    class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-rose-500 hover:text-white rounded-xl transition-all font-black">✕
+                    CERRAR</button>
+            </div>
+            <div class="overflow-y-auto pr-4 space-y-8">
+                <!-- Team Section -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-indigo-900/20">
+                    <h4 class="text-xs font-black text-indigo-500 uppercase tracking-widest mb-4">Equipo:</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Procesos</p>
+                            <p id="detail-team-procesos" class="font-bold text-slate-800 dark:text-white"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Diseño organizacional</p>
+                            <p id="detail-team-diseno" class="font-bold text-slate-800 dark:text-white"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black uppercase text-slate-400 mb-1">Capacity</p>
+                            <p id="detail-team-capacity" class="font-bold text-slate-800 dark:text-white"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Observation Modal -->
     <div id="obs-modal" onclick="if(event.target === this) closeModal()"
         class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/80 backdrop-blur-md cursor-pointer">
@@ -1130,7 +1154,6 @@
                     Observación</button>
             </div>
         </div>
-    </div>
     </div>
     <!-- Toast Notification -->
     <div id="toast"></div>
@@ -1967,8 +1990,9 @@
                 const pFTE = parseFloat(row[potFteIdx]) || 0;
                 const mFTE = parseFloat(row[matFteIdx]) || 0;
                 const avance = pUSD > 0 ? (mUSD / pUSD * 100).toFixed(1) : "0.0";
+                const rowIdx = appData.baseData.indexOf(row);
                 tr.innerHTML = `
-                    <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[300px] whitespace-normal leading-relaxed" title="${name}">${name}</td>
+                    <td class="px-6 py-5 font-black text-slate-900 dark:text-white truncate max-w-[300px] whitespace-normal leading-relaxed cursor-pointer hover:underline decoration-2 underline-offset-4" onclick="openDetailModal(appData.baseData[${rowIdx}])" title="${name}">${name}</td>
                     <td class="px-4 py-5 font-mono text-[10px] text-slate-500 dark:text-slate-400 font-bold">${cod || 'N/A'}</td>
                     <td class="px-4 py-5 text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-tighter">${type || 'N/A'}</td>
                     <td class="px-4 py-5 text-[10px] font-bold text-slate-500 dark:text-slate-400 capitalize">${String(vpe || 'N/A').toLowerCase()}</td>
@@ -2274,7 +2298,7 @@
                 </div>
             `;
             label.title = r[1];
-            label.onclick = (e) => showInitiativeDetail(e, r);
+            label.onclick = () => openDetailModal(r);
 
             const grid = document.createElement('div');
             grid.className = "gantt-grid-system h-[60px]";
@@ -2421,40 +2445,19 @@
             }
         }
 
-        function showInitiativeDetail(e, r) {
-            e.stopPropagation();
-            const pop = document.getElementById('init-detail-popover');
-            const rect = e.target.getBoundingClientRect();
-            const containerRect = document.getElementById('views-container').getBoundingClientRect();
+        function openDetailModal(r) {
+            if (!r) return;
+            document.getElementById('detail-title').innerText = r[1];
+            document.getElementById('detail-subtitle').innerText = `Cód: ${r[0] || 'N/A'}`;
+            
+            // Team Info (Indices 14, 15, 16 for O, P, Q)
+            document.getElementById('detail-team-procesos').innerText = r[14] || 'N/A';
+            document.getElementById('detail-team-diseno').innerText = r[15] || 'N/A';
+            document.getElementById('detail-team-capacity').innerText = r[16] || 'N/A';
 
-            // Position above the clicked element
-            pop.style.display = 'block';
-            // Use page coordinates to avoid scroll-related misalignment, 
-            // but compensate for the offset parent since popover is absolute
-            const scrollContainer = document.getElementById('views-container');
-            const parentRect = pop.offsetParent.getBoundingClientRect();
-
-            pop.style.left = `${rect.left - parentRect.left}px`;
-            pop.style.top = `${rect.top - parentRect.top - pop.offsetHeight - 5}px`;
-
-            document.getElementById('pop-init-name').innerText = r[1];
-            // No longer updating POT/MAT in popover as requested
-
-            const hitosList = document.getElementById('pop-init-hitos');
-            hitosList.innerHTML = '';
-            const cod = String(r[0]).trim();
-            const milestones = appData.milestones.filter(m => String(m[1]).trim() === cod).slice(0, 3);
-            if (milestones.length === 0) {
-                hitosList.innerHTML = '<p class="text-[10px] text-slate-400 italic">No hay hitos registrados</p>';
-            } else {
-                milestones.forEach(m => {
-                    const div = document.createElement('div');
-                    div.className = "text-[10px]";
-                    div.innerHTML = `<span class="font-black text-indigo-500 block">${m[3]}</span><span class="text-slate-500">${m[2]}</span>`;
-                    hitosList.appendChild(div);
-                });
-            }
+            document.getElementById('detail-modal').classList.remove('hidden');
         }
+        function closeDetailModal() { document.getElementById('detail-modal').classList.add('hidden'); }
         function renderInitCharts(filtered) {
             let q1E = 0, q2E = 0, q3E = 0, q4E = 0, q1M = 0, q2M = 0, q3M = 0, q4M = 0;
             const initMap = {};
